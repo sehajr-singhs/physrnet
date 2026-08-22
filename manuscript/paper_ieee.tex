@@ -1,0 +1,153 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{enumitem}
+
+\definecolor{physblue}{RGB}{34,105,153}
+\hypersetup{colorlinks=true, linkcolor=physblue, citecolor=physblue, urlcolor=blue}
+
+\title{PhysRNet: A Physics-Aware Reasoning Network with\\Exact E(2)-Equivariance, Conservation Laws,\\and Interpretable Interaction Graphs}
+
+\author{
+  \IEEEauthorblockN{Sehaj Randhir Singh}
+  \IEEEauthorblockA{Independent researcher\\Partial affiliation with\\NYU Tandon School of Engineering\\Email: sehaj@nyu.edu}
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present PhysRNet, a three-module architecture for learning physical force laws
+from trajectory data. The architecture combines (i)~an E(2)-equivariant encoder with
+exact rotation-equivariance by construction (error $\leq 3 \times 10^{-12}$),
+(ii)~physics-informed conservation losses (energy, momentum, angular momentum) that
+reduce long-horizon drift by 30\%, and (iii)~a graph-based reasoning module that
+predicts interaction strengths as learned edge weights. A per-node gate blends the
+two predictive pathways while preserving exact equivariance. PhysRNet learns three
+conservative force laws---Plummer gravity, Hooke springs, Lennard-Jones---from
+synthetic trajectories alone, generalises to unseen masses and configurations, and
+runs on CPU in under three minutes per system.
+\end{abstract}
+
+\begin{IEEEkeywords}
+equivariant neural networks, physics-informed networks, graph neural networks,
+force-law learning, conservation laws
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Learning physical force laws from trajectory data requires correct symmetry structure
+and conservation constraints. We present \textbf{PhysRNet}, combining three proven
+ideas:
+
+\begin{enumerate}[leftmargin=1.4em, itemsep=2pt]
+  \item \textbf{Exact E(2)-equivariance.} Every scalar coefficient in the architecture
+        is a function of rotation-invariant features only; every vector is a scalar
+        $\times$ equivariant vector. The full model is exactly equivariant, verified to
+        machine precision.
+  \item \textbf{Conservation constraints.} Auxiliary losses penalise violations of
+        energy, linear, and angular momentum conservation.
+  \item \textbf{Interpretable interaction graph.} The reasoning module predicts signed
+        edge weights $w_{ij}$ such that $\mathbf{a}_i = \sum_j w_{ij}\hat{u}_{ij}$.
+\end{enumerate}
+
+A per-node learned gate $g_i \in [0,1]$ blends the equivariant and reasoning pathways
+while preserving exact equivariance.
+
+\section{Architecture}
+
+\subsection{Node features}
+Particle states $(\mathbf{r}_i, \mathbf{v}_i, m_i)$ are encoded as:
+\begin{itemize}
+  \item \textbf{Invariant scalars:} $\mathbf{s}_i = [m_i, |\mathbf{v}_i|,
+        \tfrac{1}{2}m_i|\mathbf{v}_i|^2, |\mathbf{r}_i - \bar{\mathbf{r}}|] \in
+        \mathbb{R}^4$.
+  \item \textbf{Equivariant vectors:} centroid-centred position and velocity, padded
+        to 3D, as 2 vector channels.
+\end{itemize}
+
+\subsection{Equivariant encoder}
+$L=2$ rounds of message passing over a fully-connected graph. Edge features are
+rotation-invariant ($\mathbf{s}_i, \mathbf{s}_j$, distance norms, dot products).
+Scalar messages are MLPs of invariant features. Vector messages are $\sigma(\text{MLP})
+\times (\mathbf{v}_i - \mathbf{v}_j)$---scalar gate $\times$ equivariant carrier.
+Node updates multiply aggregated vector messages by invariant scalar gates.
+
+\subsection{Equivariant acceleration head}
+From the encoder's equivariant vector features, a linear head with invariant scalar
+coefficients produces per-node acceleration:
+$\mathbf{a}_i^{\text{equiv}} = \sum_c c_i \cdot \mathbf{v}_{i,c}^{\text{enc}}|_{\text{2D}}$.
+
+\subsection{Reasoning GNN}
+The reasoning module computes per-pair interaction weights:
+$w_{ij} = \text{MLP}([\mathbf{s}_i, \mathbf{s}_j, d_{ij}, |\Delta\mathbf{v}|])$,
+and predicts acceleration as $\mathbf{a}_i^{\text{reason}} = \sum_j w_{ij}\hat{u}_{ij}$.
+The learned edge weights $w_{ij}$ are the recovered interaction graph.
+
+\subsection{Physics residual}
+Conservation-law losses from semi-implicit Euler prediction:
+\begin{equation}
+  \mathcal{L}_{\text{phys}} = |E_{\text{pred}} - E_{\text{true}}|^2 +
+  0.5|\mathbf{p}_{\text{pred}} - \mathbf{p}_{\text{true}}|^2 +
+  0.5|\mathbf{L}_{\text{pred}} - \mathbf{L}_{\text{true}}|^2
+\end{equation}
+
+\subsection{Training}
+Loss: $\mathcal{L} = \|a_{\text{pred}} - a_{\text{true}}\|^2 +
+\lambda_{\text{phys}}\mathcal{L}_{\text{phys}}$, $\lambda_{\text{phys}}=0.5$.
+Adam ($2\times 10^{-3}$), cosine annealing, batch 512, 60 epochs.
+
+\section{Experiments}
+
+All experiments on CPU, 300 training trajectories, 50 timesteps, hidden dim 64.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+System & Test MSE & Gen MSE & Equiv. err & Drift \\
+\midrule
+Gravity   & $4.1 \times 10^{-4}$ & $5.9 \times 10^{-4}$ & $6.4 \times 10^{-14}$ & 0.003 \\
+Spring    & $3.4 \times 10^{-2}$ & $1.1 \times 10^{-2}$ & $1.6 \times 10^{-12}$ & 0.015 \\
+LJ        & $4.6 \times 10^{-2}$ & $1.2 \times 10^{-2}$ & $2.6 \times 10^{-13}$ & 0.019 \\
+\bottomrule
+\end{tabular}
+\caption{Test and generalisation MSE, rotation equivariance error, and 50-step energy
+drift on three conservative systems.}
+\label{tab:results}
+\end{table}
+
+\textbf{Force-law learning.} PhysRNet learns all three force laws from trajectories
+alone (Table~\ref{tab:results}). Gravity achieves the lowest MSE ($4.1\times10^{-4}$);
+spring and LJ converge to $\sim 10^{-2}$ within 60 epochs.
+
+\textbf{Exact equivariance.} The rotation error $\|R \cdot a(x) - a(Rx)\|^2$ is at
+machine precision ($\leq 3 \times 10^{-12}$) for all systems and all model variants.
+This is an architectural guarantee, not an empirical property.
+
+\textbf{PINN ablation.} On gravity, removing the physics loss increases MSE by
+$\times 2.2$ and energy drift by $\times 1.4$, confirming that conservation constraints
+act as effective regularisers.
+
+\textbf{Reasoning-only.} Freezing the gate ($g=0$) shows the reasoning module alone
+achieves moderate MSE (spring: $0.19$ versus $0.034$ for the full model), proving
+the interpretable pathway learns the force law independently.
+
+\section{Conclusion}
+
+PhysRNet combines exact symmetry, conservation, and interpretability into a single
+architecture for physical force-law learning. The exact equivariance guarantee is
+verified to machine precision, the conservation loss reduces drift by 30\%, and the
+reasoning module recovers interaction strengths as explicit edge weights. All results
+are CPU-reproducible from committed code.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

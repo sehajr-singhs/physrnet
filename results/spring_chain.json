@@ -1,0 +1,22 @@
+{
+  "name": "spring_chain",
+  "physics_type": "spring",
+  "n_train": 300,
+  "n_val": 100,
+  "n_test": 100,
+  "n_epochs": 60,
+  "w_physics": 0.5,
+  "test_mse": 0.03386712446808815,
+  "test_energy_err": 1.8051672157071152e-07,
+  "test_momentum_err": 5.726609515477321e-07,
+  "test_equivariance_err": 1.6331181063511044e-12,
+  "test_energy_drift": 0.015124529600143433,
+  "test_momentum_drift": 0.001947939395904541,
+  "test_graph_topology_recall": 0.615,
+  "test_graph_strength_corr": -0.04404424351571034,
+  "gen_mse": 0.011194059625267982,
+  "gen_energy_err": 9.284163837719461e-08,
+  "gen_equivariance_err": 1.5274624149070118e-12,
+  "mean_gate": 0.564206063747406,
+  "wall_time_s": 140.93219804763794
+}

@@ -1,0 +1,22 @@
+{
+  "name": "reasoning_only_spring",
+  "physics_type": "spring",
+  "n_train": 300,
+  "n_val": 100,
+  "n_test": 100,
+  "n_epochs": 60,
+  "w_physics": 0.5,
+  "test_mse": 0.1946772038936615,
+  "test_energy_err": 1.6281595662803738e-06,
+  "test_momentum_err": 1.4833140085102059e-05,
+  "test_equivariance_err": 1.7418865015748214e-12,
+  "test_energy_drift": 0.015313714742660522,
+  "test_momentum_drift": 0.1102510392665863,
+  "test_graph_topology_recall": 0.3675,
+  "test_graph_strength_corr": -0.08418345606327587,
+  "gen_mse": 0.07156265527009964,
+  "gen_energy_err": 5.640296762976504e-07,
+  "gen_equivariance_err": 1.4546017927490051e-12,
+  "mean_gate": 0.0,
+  "wall_time_s": 135.81622171401978
+}

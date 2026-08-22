@@ -1,0 +1,23 @@
+{
+  "name": "ablation_no_pinn",
+  "physics_type": "gravity",
+  "n_train": 300,
+  "n_val": 100,
+  "n_test": 100,
+  "n_epochs": 60,
+  "w_physics": 0.0,
+  "test_mse": 0.000917358323931694,
+  "test_energy_err": 1.8483723351891967e-07,
+  "test_momentum_err": 1.5986370272003114e-07,
+  "test_equivariance_err": 1.7673867604888274e-13,
+  "test_energy_drift": 0.003638744354248047,
+  "test_momentum_drift": 0.02200171259050876,
+  "test_graph_topology_recall": null,
+  "test_adjacency_auc": null,
+  "test_graph_strength_corr": 0.48471428571428576,
+  "gen_mse": 0.0006976915174163878,
+  "gen_energy_err": 5.824391564601683e-07,
+  "gen_equivariance_err": 1.3189380414658364e-13,
+  "mean_gate": 0.31521427631378174,
+  "wall_time_s": 126.10195970535278
+}

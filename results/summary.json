@@ -1,0 +1,25 @@
+{
+  "reasoning_only_gravity": {
+    "name": "reasoning_only_gravity",
+    "physics_type": "gravity",
+    "n_train": 300,
+    "n_val": 100,
+    "n_test": 100,
+    "n_epochs": 60,
+    "w_physics": 0.5,
+    "test_mse": 0.07325820624828339,
+    "test_energy_err": 6.851018042652868e-06,
+    "test_momentum_err": 1.7128102626884356e-05,
+    "test_equivariance_err": 3.2555076476525066e-14,
+    "test_energy_drift": 0.028142929077148438,
+    "test_momentum_drift": 0.23165934254234344,
+    "test_graph_topology_recall": null,
+    "test_adjacency_auc": null,
+    "test_graph_strength_corr": -0.02571428571428576,
+    "gen_mse": 0.09837038069963455,
+    "gen_energy_err": 4.436440940480679e-05,
+    "gen_equivariance_err": 2.3405861955219003e-14,
+    "mean_gate": 0.0,
+    "wall_time_s": 122.65131735801697
+  }
+}
