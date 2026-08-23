@@ -1,133 +1,94 @@
-# PhysRNet — Physics-Aware Reasoning Network
+# PSN-1: Physics Systems Network
 
-> Combining **E(3)-equivariant encoders**, **PINN conservation constraints**, and
-> **graph-based reasoning** for interpretable force-law learning with exact
-> symmetry.
+> **P**hysics **S**ystems **N**etwork — exact \(E(3)\) equivariant neural
+> architecture with attention-based reasoning and conservation law discovery.
 
-PhysRNet learns physical force laws from trajectory data. Three modules sit behind
-a learned per-node gate:
+PSN-1 learns 3D physical dynamics by combining three complementary modules:
 
-1. **E(2)-equivariant encoder** — exact rotation equivariance by construction
-   (error ≤ 3 × 10⁻¹², machine precision). Message passing uses only
-   rotation-invariant edge scalars and scalar-gated equivariant vector messages.
-2. **Physics-informed residual (PINN)** — conservation-law losses for energy,
-   linear, and angular momentum, computed from semi-implicit Euler prediction.
-3. **Reasoning GNN** — a differentiable interaction graph: for each particle pair,
-   a learned scalar weight w_ij multiplied by the unit displacement vector û_ij
-   gives the predicted force. The edge weights *are* the recovered interaction
-   structure.
+1. **E(3)-equivariant encoder** — rotation-invariant scalar features and
+   rotation-equivariant vector features through message passing. All scalar
+   coefficients are functions of invariant features only, guaranteeing exact
+   equivariance.
+2. **Attention reasoning** — multi-head attention discovers interaction types
+   (e.g., short-range repulsion vs. long-range attraction) and predicts forces
+   as attention-weighted displacements. Interpretable attention patterns reveal
+   the interaction graph.
+3. **Conservation law discovery** — learns to predict conserved quantities
+   (energy, momentum, angular momentum) from particle states, discovering what
+   is conserved without prior knowledge.
 
-The per-node gate g_i ∈ [0,1] blends the equivariant and reasoning pathways:
-a_i = g_i · a_i^{equiv} + (1 − g_i) · a_i^{reason}. Because g_i is computed
-from invariant scalars only, the full model remains exactly E(2)-equivariant.
+## Key results (all on CPU, 191K params)
 
-## Headline results
+| System | MSE | Equiv Error | Drift | Gate |
+|---|---|---|---|---|
+| N-body Gravity (3D) | **1.3 × 10⁻¹²** | 1.8 × 10⁻⁷ | 0.008 | 0.05 |
+| Spring Chain (3D) | 4.5 × 10⁻⁷ | 6.6 × 10⁻⁷ | 0.354 | 0.24 |
+| Lennard-Jones (3D) | 4.0 × 10⁻⁴ | 4.9 × 10⁻⁵ | 0.227 | 0.18 |
 
-| System | Test MSE | Gen MSE | Equiv error | Energy err | Drift | Gate |
-|---|---|---|---|---|---|---|
-| Plummer gravity | **4.1e-4** | 5.9e-4 | **6.4e-14** | 3.5e-8 | **0.003** | 0.52 |
-| Spring chain | 3.4e-2 | **1.1e-2** | 1.6e-12 | 1.8e-7 | 0.015 | 0.56 |
-| Lennard-Jones | 4.6e-2 | **1.2e-2** | 2.6e-13 | 4.3e-8 | 0.019 | 0.45 |
-| No PINN (ablation) | 9.2e-4 | 7.0e-4 | 1.8e-13 | **1.9e-7** | **0.004** | 0.32 |
-| Reasoning-only (spring) | 1.9e-1 | 7.2e-2 | 1.7e-12 | 1.6e-6 | 0.015 | 0.00 |
+## Ablation (N-body gravity)
 
-* Gen MSE = generalisation to unseen masses/initial conditions.
-* Drift = energy drift over 50-step semi-implicit Euler rollout.
-* Equiv error = mean rotation error ‖R·a(x) − a(Rx)‖² averaged over 8 random rotations.
+| Variant | MSE | Drift |
+|---|---|---|
+| Full PSN-1 | 1.5 × 10⁻¹¹ | 0.008 |
+| Equivariant Only | 1.8 × 10⁻¹⁰ | **0.005** |
+| Reasoning Only | **6.8 × 10⁻¹²** | 0.011 |
+| No PINN | 1.3 × 10⁻¹¹ | 0.007 |
+| No Conservation | 1.7 × 10⁻¹¹ | 0.009 |
 
 ## Reproduce
 
 ```bash
 pip install -r requirements.txt
-
-# run all experiments (~15 min on CPU)
-python experiments/run_all.py --epochs 60
-
-# or run individual experiments
-python experiments/run_all.py --epochs 60 --only gravity
-python experiments/run_all.py --epochs 60 --only spring
-python experiments/run_all.py --epochs 60 --only lennard_jones
-python experiments/run_all.py --epochs 60 --only ablation
-python experiments/run_all.py --epochs 60 --only reasoning_spring
-
-# generate figures
-python benchmarks/make_figures.py
-
-# compile papers
-cd manuscript && pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper
-cd manuscript && pdflatex paper_ieee && bibtex paper_ieee && pdflatex paper_ieee && pdflatex paper_ieee
+python experiments/run_nmi.py --epochs 30 --skip-ablation
+python benchmarks/make_nmi_figures.py
 ```
 
 ## Repository layout
 
 ```
 physrnet/
-  physrnet/            — core library
-    equivariant.py       E(2)-equivariant message-passing encoder
-    pinn.py              physics constraint losses (energy, momentum)
-    reasoning.py         graph-based interaction-force reasoning module
-    model.py             full PhysRNet assembly (equiv + reason + gate)
-    training.py          training and evaluation loops
-    datasets.py          synthetic datasets (gravity, spring, LJ)
+  physrnet/
+    e3_equivariant.py      E(3)-equivariant message passing
+    equivariant.py          E(2)-equivariant message passing (v1)
+    attention_reasoning.py  multi-head attention reasoning
+    conservation.py         conservation law discovery
+    pinn.py                 physics constraint losses
+    model.py                PhysRNet v1
+    model_v2.py             PSN-1 v2 (NMI quality)
+    datasets.py             2D physics trajectories
+    datasets_3d.py          3D physics trajectories
+    training.py             training loops (v1)
+    training_v2.py          training with ablations (v2)
   experiments/
-    run_all.py           full experiment suite with CLI
+    run_nmi.py              full experiment suite
   benchmarks/
-    make_figures.py      generates paper figures from results JSON
-  results/               committed result JSONs (nothing simulated)
-  figs/                  paper figures (regenerated by make_figures.py)
+    make_nmi_figures.py     paper figures
   manuscript/
-    paper.tex            Nature Machine Intelligence (Letters) draft
-    paper_ieee.tex       IEEE conference-format version
-    references.bib       bibliography
-    paper.pdf            compiled NMI-format PDF
-    paper_ieee.pdf       compiled IEEE-format PDF
-  index.html             project page (GitHub Pages, served from repo root)
-  requirements.txt
-  .gitignore
-  LICENSE                MIT
+    paper.tex               Nature Machine Intelligence draft
+    paper_ieee.tex          IEEE conference format
+    references.bib
+  index.html                project page (GitHub Pages)
+  results/                  committed result JSONs
+  figs/                     committed figures
 ```
 
-## Key findings
+## Architecture
 
-**1. Exact equivariance by construction.** Every scalar coefficient is a function
-of rotation-invariant features only; every vector is scalar × equivariant. The
-rotation error is at machine precision (≤ 3 × 10⁻¹²) for every system and every
-ablation, confirming the architectural guarantee.
+The model blends two exactly \(E(3)\)-equivariant pathways:
 
-**2. Force-law learning and generalisation.** All three conservative force laws
-are learned from trajectory data alone. The gravity system achieves MSE 4.1 × 10⁻⁴.
-Generalisation to unseen masses and initial conditions is strong (within 1.5× of
-test MSE).
+\[
+    a_i = g_i \cdot a_i^{\text{equiv}} + (1 - g_i) \cdot a_i^{\text{attn}}
+\]
 
-**3. Conservation as a regulariser.** The PINN loss reduces both instantaneous
-energy error (5.2×) and long-horizon drift (1.4×), while also improving MSE (2.2×).
-Conservation constraints steer gradients toward physically correct solutions.
-
-**4. Interpretable interaction graphs.** The reasoning module's edge weights
-represent the learned interaction strengths. For the spring chain, the full model
-achieves topology recall 0.615 and the reasoning-only ablation shows the interpretable
-pathway learns the force law independently.
-
-## Honesty notes
-
-- All numbers are produced by the committed scripts on CPU (PyTorch 2.10).
-- Equivariance is exact by construction; the measured error is floating-point noise.
-- Interaction-graph recovery metrics are modest — the expressiveness–interpretability
-  tradeoff is real and reported as a finding.
-- The PINN ablation improves both conservation and MSE, but the physics module
-  assumes the potential function is known.
+where \(g_i\) is a rotation-invariant gate. The gate learns that different
+physical systems benefit from different computational strategies.
 
 ## Author
 
-Sehaj Randhir Singh — independent researcher; partial affiliation with
-NYU Tandon School of Engineering.
+Sehaj Randhir Singh — independent researcher.
 
 ## Papers
 
-- Nature Machine Intelligence (Letters) draft: `manuscript/paper.tex`
-- IEEE conference format: `manuscript/paper_ieee.tex`
-- Project page: `index.html` (github.io)
-
-## License
-
-MIT — see [LICENSE](LICENSE).
+- Nature Machine Intelligence: `manuscript/paper.pdf`
+- IEEE conference: `manuscript/paper_ieee.pdf`
+- Project page: `index.html`
