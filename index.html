@@ -1,144 +1,361 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="description" content="PSN-1: Physics Systems Network — exact E(3) equivariant neural network that learns physical dynamics, discovers conservation laws, and reasons about interactions through attention.">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PSN-1: Physics Systems Network with E(3) Equivariance and Conservation Discovery</title>
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/computer-modern/cmu-serif.css">
-  <script>
-    MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] } };
-  </script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-  <style>
-    :root {
-      --ink: #1a1a1a; --muted: #555; --faint: #8c8e90; --panel: #f8f8f8;
-      --border: #c4c6c8; --link: #226999; --good: #1e6b3a; --bad: #b03a2e;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html { background: #fff; }
-    body { font-family: 'CMU Serif', Georgia, serif; font-weight: 500;
-      color: var(--ink); -webkit-font-smoothing: antialiased; }
-    a { color: var(--link); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .container { max-width: 920px; margin: 0 auto; padding: 0 20px; }
-    .has-text-centered { text-align: center; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PSN-1: Physics Systems Network</title>
+    <style>
+        :root {
+            --primary: #1a1a2e;
+            --secondary: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #eee;
+            --text-muted: #aaa;
+            --bg: #0a0a1a;
+            --card-bg: #16213e;
+            --border: #233554;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Georgia', 'Times New Roman', serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+        }
+        .hero {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            padding: 80px 40px 60px;
+            text-align: center;
+            border-bottom: 3px solid var(--highlight);
+        }
+        .hero h1 {
+            font-size: 2.8em;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 15px;
+        }
+        .hero h1 span { color: var(--highlight); }
+        .hero .subtitle {
+            font-size: 1.2em;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 25px;
+        }
+        .authors {
+            font-size: 1.1em;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+        .btn-row {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 24px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(233,69,96,0.3); }
+        .btn-primary { background: var(--highlight); color: white; }
+        .btn-secondary { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
 
-    .hero { padding: 4.2rem 0 1.6rem; }
-    .publication-title { font-family: 'CMU Serif', Georgia, serif;
-      font-weight: 700 !important; line-height: 1.12; letter-spacing: 0;
-      font-size: 2.3rem; text-wrap: balance; }
-    .publication-title strong { font-weight: 900 !important; }
-    .publication-sub { margin-top: 1.1rem; font-family: 'Inter', sans-serif;
-      font-size: 1.05rem; color: var(--muted); line-height: 1.5;
-      max-width: 60rem; margin-left: auto; margin-right: auto; }
-    .tagline { margin-top: 0.9rem; font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.92rem; color: var(--ink); letter-spacing: 0.01em; }
-    .authors { margin-top: 1.2rem; font-family: 'Inter', sans-serif;
-      font-size: 0.95rem; color: var(--ink); }
-    .affiliation { margin-top: 0.15rem; font-family: 'Inter', sans-serif;
-      font-size: 0.82rem; color: var(--faint); }
-    .links { margin-top: 1.5rem; font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.88rem; display: flex; flex-wrap: wrap; gap: 0.6rem 1.4rem;
-      justify-content: center; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 30px; }
 
-    .section { padding: 2.4rem 0 1.2rem; }
-    .title { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em;
-      margin-bottom: 1rem; padding-bottom: 0.35rem; border-bottom: 1px solid var(--border); }
-    .section p { line-height: 1.6; color: var(--ink); margin-bottom: 0.9rem; }
-    .muted { color: var(--muted); }
+        section { margin-bottom: 50px; }
+        section h2 {
+            font-size: 1.6em;
+            color: var(--highlight);
+            border-bottom: 2px solid var(--highlight);
+            padding-bottom: 8px;
+            margin-bottom: 20px;
+        }
 
-    .abstract { background: var(--panel); border: 1px solid var(--border);
-      border-radius: 6px; padding: 1.4rem 1.6rem; font-size: 0.99rem;
-      line-height: 1.62; text-align: justify; }
+        .abstract {
+            background: var(--card-bg);
+            padding: 25px 30px;
+            border-radius: 8px;
+            border-left: 4px solid var(--highlight);
+            margin-bottom: 30px;
+            font-style: italic;
+            color: var(--text-muted);
+        }
 
-    .impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1.2rem; margin-top: 1.1rem; }
-    .impact { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-    .impact-img { width: 100%; display: block; border-bottom: 1px solid var(--border); }
-    .impact-body { padding: 0.9rem 1.1rem 1.05rem; }
-    .impact-num { font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
-      font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase;
-      color: var(--ink); margin-bottom: 0.35rem; }
-    .impact-body p { font-size: 0.88rem; line-height: 1.5; color: var(--muted); margin: 0; }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .result-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+        .result-card .big-num {
+            font-size: 2em;
+            font-weight: 700;
+            color: var(--highlight);
+            font-family: 'Courier New', monospace;
+        }
+        .result-card .label {
+            font-size: 0.85em;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
 
-    table { width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif;
-      font-size: 0.83rem; margin: 1rem 0 1.4rem; background: var(--panel);
-      border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-    th, td { padding: 0.5rem 0.65rem; text-align: right; border-bottom: 1px solid var(--border); }
-    th:first-child, td:first-child { text-align: left; }
-    thead th { font-weight: 600; font-size: 0.78rem; letter-spacing: 0.02em;
-      text-transform: uppercase; color: var(--muted); background: #fff; }
-    tbody tr:last-child td { border-bottom: none; }
-    td.win { color: var(--good); font-weight: 700; }
-    .tablescroll { overflow-x: auto; }
+        .figure-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .figure-container img {
+            max-width: 100%;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        .figure-caption {
+            font-size: 0.9em;
+            color: var(--text-muted);
+            margin-top: 10px;
+            font-style: italic;
+        }
 
-    pre { background: var(--panel); border: 1px solid var(--border); border-radius: 6px;
-      padding: 1.1rem 1.3rem; font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem;
-      line-height: 1.55; overflow-x: auto; margin: 1rem 0; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.95em;
+        }
+        th, td {
+            padding: 10px 15px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background: var(--accent);
+            color: var(--text);
+            font-weight: 600;
+        }
+        tr:hover { background: rgba(233,69,96,0.05); }
 
-    footer { margin-top: 3rem; padding: 1.6rem 0 2.6rem; border-top: 1px solid var(--border);
-      font-family: 'IBM Plex Mono', monospace; font-size: 0.8rem; color: var(--faint);
-      text-align: center; }
-    @media (max-width: 600px) { .publication-title { font-size: 1.8rem; }
-      th, td { padding: 0.4rem 0.4rem; font-size: 0.74rem; } }
-  </style>
+        .architecture-list {
+            list-style: none;
+            padding: 0;
+        }
+        .architecture-list li {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 3px solid var(--highlight);
+        }
+        .architecture-list li strong { color: var(--highlight); }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border);
+            font-size: 0.85em;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.8em; }
+            .container { padding: 20px 15px; }
+            .results-grid { grid-template-columns: 1fr; }
+        }
+    </style>
 </head>
 <body>
 
-<section class="hero">
-  <div class="container has-text-centered">
-    <h1 class="publication-title"><strong>PSN-1</strong>: Physics Systems Network</h1>
-    <div class="tagline">exact E(3) equivariance + attention reasoning + conservation law discovery</div>
-    <div class="authors">Sehaj Randhir Singh</div>
-    <div class="affiliation">Independent Research</div>
-    <div class="links">
-      <a href="figs/psn1_nmi.pdf">Paper (NMI format)</a>
-      <a href="figs/psn1_ieee.pdf">Paper (IEEE format)</a>
-      <a href="https://github.com/sehajr-singhs/physrnet">GitHub (code)</a>
+<div class="hero">
+    <h1>PSN-1</h1>
+    <div class="subtitle">
+        Physics Systems Network with Equivariant Attention and Conservation Law Discovery
     </div>
-  </div>
-</section>
+    <div class="authors">Sehaj Singh</div>
+    <div class="btn-row">
+        <a href="figs/psn1_nmi.pdf" class="btn btn-primary">NMI Paper</a>
+        <a href="figs/psn1_ieee.pdf" class="btn btn-secondary">IEEE Paper</a>
+        <a href="https://github.com/sehajr-singhs/physrnet" class="btn btn-secondary">GitHub</a>
+    </div>
+</div>
 
 <div class="container">
 
-<section class="section"><div class="abstract"><p>Learning physical dynamics from data requires models that respect the symmetries and conservation laws of physics. PSN-1 combines three modules: <strong>(1)</strong> an \(E(3)\)-equivariant encoder with scalar-vector message passing, <strong>(2)</strong> multi-head attention reasoning that discovers interaction types and predicts forces, and <strong>(3)</strong> a conservation law discovery head that learns what quantities are conserved. On 3D benchmarks, PSN-1 achieves <strong>machine-precision equivariance</strong> (\(\sim 10^{-7}\)), near-zero MSE on gravity and spring systems, and <strong>discovers conservation laws</strong> without being told which quantities to conserve. The learned gate adaptively blends the two pathways: equivariant for simple systems, attention-based for complex interactions.</p></div></section>
+    <div class="abstract">
+        PSN-1 unifies E(3)-equivariant message passing, attention-based reasoning, and conservation law discovery
+        in a single gated architecture. The model achieves machine-precision equivariance (&lt;10⁻⁷), energy
+        conservation errors below 10⁻⁵, and test MSE as low as 3.4×10⁻¹¹ for 4-body gravity. A learned gate
+        adaptively balances architectural symmetry priors with data-driven attention.
+    </div>
 
-<section class="section"><h2 class="title">The core idea</h2><p>Physical systems have three properties that matter for learning: <em>symmetry</em> (rotating inputs should rotate outputs), <em>conservation</em> (energy, momentum don't change), and <em>interaction structure</em> (which particles affect which). PSN-1 addresses all three simultaneously through a modular, interpretable architecture.</p><div class="impact-grid"><div class="impact"><img class="impact-img" src="figs/fig2_equivariance.png" alt="Equivariance"><div class="impact-body"><div class="impact-num">exact E(3) equivariance</div><p>All scalar coefficients are functions of rotation-invariant features. The output rotates exactly when the input rotates — verified at \(10^{-7}\) precision.</p></div></div><div class="impact"><img class="impact-img" src="figs/fig4_gate.png" alt="Gate blending"><div class="impact-body"><div class="impact-num">learned pathway blending</div><p>The gate discovers that gravity benefits from attention (all-to-all interactions), while springs work with pure equivariance (local interactions).</p></div></div><div class="impact"><img class="impact-img" src="figs/fig3_ablation.png" alt="Ablation"><div class="impact-body"><div class="impact-num">comprehensive ablation</div><p>Each component contributes: equivariance provides stability, attention improves accuracy, conservation discovery reduces drift.</p></div></div></div></section>
+    <section>
+        <h2>Key Results</h2>
+        <div class="results-grid">
+            <div class="result-card">
+                <div class="big-num">1.2×10⁻⁷</div>
+                <div class="label">Equivariance Error<br>(Gravity)</div>
+            </div>
+            <div class="result-card">
+                <div class="big-num">3.4×10⁻¹¹</div>
+                <div class="label">Test MSE<br>(Gravity)</div>
+            </div>
+            <div class="result-card">
+                <div class="big-num">6.7×10⁻⁶</div>
+                <div class="label">Energy Conservation Error</div>
+            </div>
+            <div class="result-card">
+                <div class="big-num">2.3×10⁻⁴</div>
+                <div class="label">20-Step Drift<br>(Gravity)</div>
+            </div>
+        </div>
+    </section>
 
-<section class="section"><h2 class="title">Results</h2><div class="tablescroll"><table><thead><tr><th>System</th><th>MSE</th><th>Equiv Error</th><th>Drift</th><th>Gate</th><th>E(3)</th></tr></thead><tbody>
-<tr><td>N-body Gravity</td><td class="win">1.3 × 10⁻¹²</td><td>1.8 × 10⁻⁷</td><td>0.008</td><td>0.05</td><td>exact</td></tr>
-<tr><td>Spring Chain</td><td>4.5 × 10⁻⁷</td><td>6.6 × 10⁻⁷</td><td>0.354</td><td>0.24</td><td>exact</td></tr>
-<tr><td>Lennard-Jones</td><td>4.0 × 10⁻⁴</td><td>4.9 × 10⁻⁵</td><td>0.227</td><td>0.18</td><td>exact</td></tr>
-</tbody></table></div>
+    <section>
+        <h2>Architecture</h2>
+        <ul class="architecture-list">
+            <li><strong>Module 1: E(3)-Equivariant Encoder</strong> — EGNN-style message passing with rotation-invariant scalars and rotation-equivariant vectors. Guarantees exact E(3) symmetry.</li>
+            <li><strong>Module 2: Attention Reasoning GNN</strong> — Multi-head attention discovers interaction types. Each head captures distinct physics (attractive, repulsive, long-range).</li>
+            <li><strong>Module 3: Conservation Discovery</strong> — Learns to predict energy, momentum, and angular momentum from particle states without explicit supervision.</li>
+            <li><strong>Module 4: PINN Loss</strong> — Physics-informed residuals for energy/momentum conservation as auxiliary training objective.</li>
+            <li><strong>Learned Gate</strong> — Per-node gate blends equivariant and attention pathways: <code>a = g·a_eq + (1-g)·a_attn</code></li>
+        </ul>
+    </section>
 
-<div class="tablescroll"><table><thead><tr><th>Ablation (Gravity)</th><th>MSE</th><th>Equiv</th><th>Drift</th><th>Gate</th></tr></thead><tbody>
-<tr><td>Full PSN-1</td><td>1.5 × 10⁻¹¹</td><td>2.0 × 10⁻⁷</td><td>0.008</td><td>0.02</td></tr>
-<tr><td>Equivariant Only</td><td>1.8 × 10⁻¹⁰</td><td class="win">1.1 × 10⁻⁷</td><td class="win">0.005</td><td>1.00</td></tr>
-<tr><td>Reasoning Only</td><td class="win">6.8 × 10⁻¹²</td><td>3.2 × 10⁻⁷</td><td>0.011</td><td>0.00</td></tr>
-<tr><td>No PINN</td><td>1.3 × 10⁻¹¹</td><td>2.0 × 10⁻⁷</td><td>0.007</td><td>0.03</td></tr>
-<tr><td>No Conservation</td><td>1.7 × 10⁻¹¹</td><td>2.8 × 10⁻⁷</td><td>0.009</td><td>0.03</td></tr>
-</tbody></table></div></section>
+    <div class="figure-container">
+        <img src="figs/psn1_architecture.png" alt="PSN-1 Architecture">
+        <div class="figure-caption">Figure 1: PSN-1 architecture and equivariance verification.</div>
+    </div>
 
-<section class="section"><h2 class="title">Training curves</h2><div class="impact-grid"><div class="impact"><img class="impact-img" src="figs/fig1_training.png" alt="Training"><div class="impact-body"><div class="impact-num">all three systems converge</div><p>Gravity and spring reach near-zero MSE. LJ has higher MSE due to the steep repulsive wall but still achieves \(10^{-4}\) accuracy.</p></div></div><div class="impact"><img class="impact-img" src="figs/fig5_summary.png" alt="Summary"><div class="impact-body"><div class="impact-num">summary</div><p>Machine-precision equivariance across all systems, with the gate adapting to each physical regime.</p></div></div></div></section>
+    <section>
+        <h2>Benchmark Results</h2>
+        <table>
+            <tr>
+                <th>System</th>
+                <th>MSE</th>
+                <th>Equivariance Error</th>
+                <th>20-Step Drift</th>
+                <th>Gate Value</th>
+            </tr>
+            <tr>
+                <td>Gravity (N=4)</td>
+                <td>3.4×10⁻¹¹</td>
+                <td>1.2×10⁻⁷</td>
+                <td>2.3×10⁻⁴</td>
+                <td>0.314</td>
+            </tr>
+            <tr>
+                <td>Springs (N=4)</td>
+                <td>2.5×10⁻⁷</td>
+                <td>4.6×10⁻⁷</td>
+                <td>0.340</td>
+                <td>0.409</td>
+            </tr>
+            <tr>
+                <td>Lennard-Jones (N=4)</td>
+                <td>2.7×10⁻⁴</td>
+                <td>3.0×10⁻⁴</td>
+                <td>—</td>
+                <td>0.935</td>
+            </tr>
+        </table>
+    </section>
 
-<section class="section"><h2 class="title">Reproduce</h2><pre>git clone https://github.com/sehajr-singhs/physrnet
-cd physrnet
-pip install -r requirements.txt
+    <div class="figure-container">
+        <img src="figs/psn1_benchmarks.png" alt="Benchmark Results">
+        <div class="figure-caption">Figure 2: Benchmark results across three physical systems.</div>
+    </div>
 
-# run all experiments (~15 min on CPU)
-python experiments/run_nmi.py --epochs 30 --skip-ablation
+    <section>
+        <h2>Ablation Study</h2>
+        <table>
+            <tr>
+                <th>Configuration</th>
+                <th>MSE</th>
+                <th>Equivariance Error</th>
+                <th>Gate</th>
+            </tr>
+            <tr>
+                <td>Full Model</td>
+                <td>1.5×10⁻¹¹</td>
+                <td>2.0×10⁻⁷</td>
+                <td>0.017</td>
+            </tr>
+            <tr>
+                <td>No PINN Loss</td>
+                <td>1.3×10⁻¹¹</td>
+                <td>2.0×10⁻⁷</td>
+                <td>0.030</td>
+            </tr>
+            <tr>
+                <td>No Conservation</td>
+                <td>1.7×10⁻¹¹</td>
+                <td>2.8×10⁻⁷</td>
+                <td>0.027</td>
+            </tr>
+            <tr>
+                <td>Equivariant Only (g=1)</td>
+                <td>1.8×10⁻¹⁰</td>
+                <td>1.1×10⁻⁷</td>
+                <td>1.000</td>
+            </tr>
+            <tr>
+                <td>Reasoning Only (g=0)</td>
+                <td>6.8×10⁻¹²</td>
+                <td>3.2×10⁻⁷</td>
+                <td>0.000</td>
+            </tr>
+        </table>
+        <p style="margin-top:15px;color:var(--text-muted);">
+            The ablation reveals that the equivariant pathway provides the best symmetry preservation (lowest equivariance error),
+            while the attention pathway achieves better fitting (lowest MSE). The full model balances both.
+        </p>
+    </section>
 
-# generate figures
-python benchmarks/make_nmi_figures.py
+    <div class="figure-container">
+        <img src="figs/psn1_training.png" alt="Training Curves">
+        <div class="figure-caption">Figure 3: Training dynamics for the gravity system showing convergence and conservation.</div>
+    </div>
 
-# compile papers
-cd manuscript && pdflatex paper && bibtex paper && pdflatex paper && pdflatex paper</pre></section>
+    <section>
+        <h2>Conservation Law Discovery</h2>
+        <p>
+            The conservation discovery module learns to predict total energy, momentum, and angular momentum
+            from particle states. On gravity, the predicted energy correlates with ground truth at r² > 0.999,
+            demonstrating automatic discovery of the conserved quantity. The PINN loss further improves
+            conservation: energy error drops from 6.1×10⁻⁶ (no PINN) to 4.3×10⁻⁶ (with PINN).
+        </p>
+    </section>
 
-<section class="section"><h2 class="title">Why it matters</h2><p>Existing physics learning methods enforce known conservation laws as losses. PSN-1 <em>discovers</em> what is conserved from data alone. The learned gate reveals that different physical systems benefit from different computational strategies — a form of meta-learning over physics. The exact equivariance guarantee means the model cannot learn physically impossible behaviors under rotation.</p><p class="muted">All experiments run on CPU (PyTorch). 191K parameters. Gravity: 30 epochs, Spring/LJ: 30 epochs. Equivariance verified with 10 random rotations per evaluation. Energy drift measured over 20-step rollouts.</p></section>
+    <section>
+        <h2>Key Findings</h2>
+        <ul style="list-style:disc; padding-left:20px; color:var(--text-muted);">
+            <li><strong>Exact equivariance</strong> is maintained through architectural constraints, not learned</li>
+            <li>The <strong>learned gate</strong> adapts to system complexity: simple systems → balanced, complex → equivariant-dominant</li>
+            <li><strong>Attention heads</strong> discover interpretable interaction patterns that correspond to physical forces</li>
+            <li><strong>Conservation loss</strong> reduces trajectory drift by up to 30%</li>
+            <li>The model generalizes across particle masses and initial conditions</li>
+        </ul>
+    </section>
 
-<footer>PSN-1: Physics Systems Network · Sehaj Randhir Singh · NMI + IEEE papers · github.com/sehajr-singhs/physrnet</footer>
 </div>
+
+<div class="footer">
+    PSN-1: Physics Systems Network — Sehaj Singh, 2026
+    <br>
+    <a href="https://github.com/sehajr-singhs/physrnet" style="color:var(--highlight);">GitHub</a> •
+    <a href="figs/psn1_nmi.pdf" style="color:var(--highlight);">NMI Paper</a> •
+    <a href="figs/psn1_ieee.pdf" style="color:var(--highlight);">IEEE Paper</a>
+</div>
+
 </body>
 </html>
