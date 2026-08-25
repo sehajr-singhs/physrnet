@@ -44,11 +44,7 @@ from .e3_equivariant import E3EquivariantMP
 from .attention_reasoning import AttentionReasoningGNN
 from .conservation import PhysicsDiscovery
 from .pinn import PhysicsResidual
-from .physics import (
-    NavierStokesResidual, MaxwellResidual,
-    SchrodingerResidual, HeatEquationResidual,
-    RelativisticResidual, GRGeodesicResidual,
-)
+# Physics residual modules are lazy-loaded in UniversalPhysicsResidual._get_residual()
 
 
 # All supported physics domains
@@ -102,6 +98,13 @@ class UniversalPhysicsResidual(nn.Module):
     def _get_residual(self, domain: str) -> nn.Module:
         if domain in self._cache:
             return self._cache[domain]
+        
+        # Lazy-load physics classes on first use
+        from .physics.fluids import NavierStokesResidual
+        from .physics.electromagnetism import MaxwellResidual
+        from .physics.quantum import SchrodingerResidual
+        from .physics.thermodynamics import HeatEquationResidual
+        from .physics.relativistic import RelativisticResidual
         
         if domain == 'fluid':
             res = NavierStokesResidual()

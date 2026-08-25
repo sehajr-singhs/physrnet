@@ -31,10 +31,26 @@ Covers 9 domains: gravity, spring, lennard_jones, fluid, electromagnetism,
 quantum, heat, relativistic, thermo_ideal.
 """
 
-from .model import PhysRNet  # noqa: F401
-from .model_v2 import PSN1v2  # noqa: F401
-from .model_universal import PSNUniversal  # noqa: F401
-from .pinn import PhysicsResidual  # noqa: F401
-from .conservation import PhysicsDiscovery  # noqa: F401
+# All imports are lazy to avoid heavy module cascading at package init.
+# Use explicit imports like: from physrnet.model_universal import PSNUniversal
 
 __version__ = "0.3.0"
+
+def __getattr__(name):
+    """Lazy import for package-level names."""
+    if name == 'PhysRNet':
+        from .model import PhysRNet
+        return PhysRNet
+    if name == 'PSN1v2':
+        from .model_v2 import PSN1v2
+        return PSN1v2
+    if name == 'PSNUniversal':
+        from .model_universal import PSNUniversal
+        return PSNUniversal
+    if name == 'PhysicsResidual':
+        from .pinn import PhysicsResidual
+        return PhysicsResidual
+    if name == 'PhysicsDiscovery':
+        from .conservation import PhysicsDiscovery
+        return PhysicsDiscovery
+    raise AttributeError(f"module 'physrnet' has no attribute '{name}'")

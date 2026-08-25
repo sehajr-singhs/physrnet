@@ -1,0 +1,53 @@
+{
+  "name": "psn1_universal_local_proof",
+  "n_domains": 9,
+  "n_epochs": 3,
+  "n_train_per_domain": 12,
+  "n_params": 157719,
+  "device": "cpu",
+  "train_loss_history": [
+    NaN,
+    NaN,
+    NaN
+  ],
+  "per_domain": {
+    "gravity": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "spring": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "lennard_jones": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "fluid": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "electromagnetism": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "quantum": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "heat": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "relativistic": {
+      "mse": NaN,
+      "gate": NaN
+    },
+    "thermo_ideal": {
+      "mse": NaN,
+      "gate": NaN
+    }
+  },
+  "final_mean_mse": NaN,
+  "total_time_s": 391.0285506248474
+}
