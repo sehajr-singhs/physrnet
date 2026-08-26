@@ -107,7 +107,7 @@
 
 <section id="clips">
   <h2>3. Simulation Clips</h2>
-  <p>Model rollout (red) overlaid on ground truth (gray). Autoregressive prediction from initial state. One model, nine domains.</p>
+  <p>Ground-truth trajectories from the nine domain generators (damped harmonic) and three real physics simulators (RK4 integration of N-body gravity, spring chains, and Lennard-Jones). These are the training data the universal model learns from. Model-overlay rollouts (prediction vs ground truth) land with the nine-domain GPU run.</p>
   <div class="clips">
     <div><img src="results/clip_gravity.gif" loading="lazy"><div class="clip-label">Gravity</div></div>
     <div><img src="results/clip_spring.gif" loading="lazy"><div class="clip-label">Springs</div></div>
