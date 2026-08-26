@@ -13,13 +13,6 @@ for rel, txt in files.items():
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(txt, encoding="utf-8")
 print("unpacked", len(files), "files", flush=True)
-# fix CUDA compat on T4: Kaggle preinstalls cu128, T4 needs cu121
-import subprocess as _sp
-_sp.run([sys.executable, "-m", "pip", "install", "--quiet",
-         "torch==2.5.1", "--index-url", "https://download.pytorch.org/whl/cu121"],
-        check=True)
-print("torch reinstalled for cu121", flush=True)
-
 import torch
 print("torch", torch.__version__, "cuda", torch.cuda.is_available(),
       "cpus", os.cpu_count(), flush=True)
