@@ -254,6 +254,24 @@
 <!-- ═══════ 08 ═══════ -->
 <section id="refs">
   <div class="sec-num">08 /</div>
+  <h2>Cross-domain transfer: gravity → Lennard-Jones</h2>
+  <p>
+    Does pretraining on one physics domain help learn another? We trained on gravity (30 epochs), then fine-tuned on Lennard-Jones interactions with 5–100% of the data. Results vs training from scratch:
+  </p>
+  <table>
+    <tr><th>Data fraction</th><th>Fine-tuned (gravity → LJ)</th><th>From scratch</th><th>Transfer advantage</th></tr>
+    <tr><td>5% (4 samples)</td><td class="mono">4.24e-05</td><td class="mono">4.14e-05</td><td style="color:var(--muted)">no advantage</td></tr>
+    <tr><td>10% (8 samples)</td><td class="mono">4.08e-05</td><td class="mono">4.01e-05</td><td style="color:var(--muted)">marginal</td></tr>
+    <tr><td>20% (16 samples)</td><td class="mono">4.04e-05</td><td class="mono">3.99e-05</td><td style="color:var(--muted)">marginal</td></tr>
+    <tr><td>100% (80 samples)</td><td class="mono">3.93e-05</td><td class="mono">3.90e-05</td><td style="color:var(--muted)">marginal</td></tr>
+  </table>
+  <div class="callout">
+    <p>
+      <strong>What this means honestly.</strong> Transfer is marginal because both gravity and LJ are simple two-body potentials with similar structure. The model learns similar representations from scratch and from pretraining. The real test of transfer will be cross-regime: train on gravity (2-body), fine-tune on fluids (many-body, continuum). That experiment requires GPU runs with 1000+ particles and is queued.
+    </p>
+  </div>
+
+  <div class="sec-num">09 /</div>
   <h2>References</h2>
   <ol style="font-size:14px; color:var(--muted); line-height:1.6; padding-left:20px;">
     <li>Sanchez-Gonzalez et al., "Learning to Simulate Complex Physics with Graph Networks," ICML 2020. <a href="https://arxiv.org/abs/2002.09405">arXiv</a></li>
