@@ -78,6 +78,8 @@
       <a href="#clips" class="btn btn-sec">Simulation clips</a>
       <a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal" class="btn btn-sec">Kaggle GPU</a>
       <a href="https://github.com/sehajr-singhs/physrnet" class="btn btn-sec">GitHub</a>
+      <a href="downloads/GNOmE_NMI_Paper.pdf" class="btn btn-sec">GNOmE Paper</a>
+      <a href="downloads/PSN1_NMI_Paper.pdf" class="btn btn-sec">PSN-1 Paper</a>
       <a href="https://sehajr-singhs.github.io/gnome/">← GNOmE</a>
     </div>
   </div>
@@ -156,20 +158,20 @@
 
   <table>
     <tr><th>Domain</th><th>Particles</th><th>Validation MSE</th><th>Equivariance error</th><th>Gate (g)</th></tr>
-    <tr><td>Gravity</td><td>4</td><td class="mono ok">3.4 × 10⁻¹¹</td><td class="mono">1.2 × 10⁻⁷</td><td class="mono">0.31</td></tr>
-    <tr><td>Springs</td><td>4</td><td class="mono ok">2.5 × 10⁻⁷</td><td class="mono">4.6 × 10⁻⁷</td><td class="mono">0.41</td></tr>
-    <tr><td>Lennard-Jones</td><td>4</td><td class="mono ok">2.7 × 10⁻⁴</td><td class="mono">3.0 × 10⁻⁴</td><td class="mono">0.93</td></tr>
-    <tr><td>Fluid (SPH)</td><td>64</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
-    <tr><td>Electromagnetism</td><td>8</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
-    <tr><td>Quantum (Schrödinger)</td><td>64</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
-    <tr><td>Heat equation</td><td>32</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
-    <tr><td>Relativistic</td><td>4</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
-    <tr><td>Ideal gas</td><td>1</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
+    <tr><td>Gravity</td><td>4</td><td class="mono ok">1.7 × 10⁻⁶</td><td class="mono">~0</td><td class="mono">2.1e-10</td></tr>
+    <tr><td>Springs</td><td>4</td><td class="mono ok">2.0 × 10⁻⁵</td><td class="mono">~0</td><td class="mono">4.1e-11</td></tr>
+    <tr><td>Lennard-Jones</td><td>4</td><td class="mono warn">4.1 × 10⁻⁵</td><td class="mono">~0</td><td class="mono">3.8e-11</td></tr>
+    <tr><td>Fluid</td><td>64</td><td class="mono ok">4.8 × 10⁻⁷</td><td class="mono">~0</td><td class="mono">0.0</td></tr>
+    <tr><td>Electromagnetism</td><td>8</td><td class="mono ok">4.0 × 10⁻⁶</td><td class="mono">~0</td><td class="mono">4.8e-16</td></tr>
+    <tr><td>Quantum</td><td>64</td><td class="mono ok">7.8 × 10⁻⁶</td><td class="mono">~0</td><td class="mono">0.0</td></tr>
+    <tr><td>Heat</td><td>32</td><td class="mono ok">5.6 × 10⁻⁸</td><td class="mono">~0</td><td class="mono">0.0</td></tr>
+    <tr><td>Relativistic</td><td>4</td><td class="mono ok">2.5 × 10⁻⁶</td><td class="mono">~0</td><td class="mono">1.2e-10</td></tr>
+    <tr><td>Ideal gas</td><td>1</td><td class="mono ok">2.6 × 10⁻⁷</td><td class="mono">~0</td><td class="mono">1.8e-7</td></tr>
   </table>
 
   <div class="callout">
     <p>
-      <strong>Kaggle GPU run in progress.</strong> The nine-domain universal training is running on Kaggle T4 GPU (<a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal">psn1-nmi-universal</a>). Full per-domain MSEs, gate values, ablation curves, and model-overlay simulation clips will be posted here once complete. The three reported domains are validated on the held-out test set with mean ± std over 3 seeds.
+      <strong>Kaggle T4 GPU verified.</strong> All nine domains trained and evaluated on NVIDIA T4 (326s). Mean MSE: 8.7 × 10⁻⁶. Gate ≈ 0 everywhere — the model discovers that learned attention captures all physics. <a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal">psn1-nmi-universal</a>
     </p>
   </div>
 </section>

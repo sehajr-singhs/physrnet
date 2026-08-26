@@ -1,0 +1,65 @@
+{
+  "name": "psn1_universal_nmi",
+  "device": "cuda",
+  "n_domains": 9,
+  "n_epochs": 25,
+  "n_train_per_domain": 40,
+  "n_params": 157719,
+  "per_domain": {
+    "gravity": {
+      "mse": 1.6778359395175357e-06,
+      "gate": 2.1310153641707075e-10
+    },
+    "spring": {
+      "mse": 2.0064289856236428e-05,
+      "gate": 4.089190444589441e-11
+    },
+    "lennard_jones": {
+      "mse": 4.149396045249887e-05,
+      "gate": 3.843655602131513e-11
+    },
+    "fluid": {
+      "mse": 4.83757162328402e-07,
+      "gate": 0.0
+    },
+    "electromagnetism": {
+      "mse": 4.013668785773916e-06,
+      "gate": 4.771030071835686e-16
+    },
+    "quantum": {
+      "mse": 7.815397111698985e-06,
+      "gate": 0.0
+    },
+    "heat": {
+      "mse": 5.6100979861639644e-08,
+      "gate": 0.0
+    },
+    "relativistic": {
+      "mse": 2.4612972993054427e-06,
+      "gate": 1.2031220464336911e-10
+    },
+    "thermo_ideal": {
+      "mse": 2.6174978984272457e-07,
+      "gate": 1.7868269708287698e-07
+    }
+  },
+  "mean_mse": 8.703117486340438e-06,
+  "train_loss_final": 0.001236340255862004,
+  "train_loss_initial": 22275232546.652046,
+  "train_time_s": 326.3368022441864,
+  "total_time_s": 344.48198199272156,
+  "clips": [
+    "clip_gravity.gif",
+    "clip_spring.gif",
+    "clip_lennard_jones.gif",
+    "clip_fluid.gif",
+    "clip_electromagnetism.gif",
+    "clip_quantum.gif",
+    "clip_heat.gif",
+    "clip_relativistic.gif",
+    "clip_thermo_ideal.gif",
+    "clip_real_gravity.gif",
+    "clip_real_spring.gif",
+    "clip_real_lennard_jones.gif"
+  ]
+}
