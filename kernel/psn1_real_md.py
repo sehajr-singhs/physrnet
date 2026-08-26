@@ -4,8 +4,13 @@ Downloads real benchmark data from figshare (same as Schütt et al. 2018).
 Trains PSN-1 vs EGNN on forces and energies.
 Runs on Kaggle T4 GPU.
 """
-import json, os, sys, time, warnings, math, hashlib, struct
+import json, os, subprocess, sys, time, warnings, math
 warnings.filterwarnings("ignore")
+
+# Reinstall torch with CUDA support for T4
+subprocess.check_call([sys.executable, "-m", "pip", "install", "-q",
+    "torch==2.5.1", "--index-url", "https://download.pytorch.org/whl/cu121"],
+    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 import numpy as np
 import torch
@@ -13,6 +18,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+print(f"torch {torch.__version__} cuda {torch.cuda.is_available()}", flush=True)
 
 RESULTS = "results"
 os.makedirs(RESULTS, exist_ok=True)
