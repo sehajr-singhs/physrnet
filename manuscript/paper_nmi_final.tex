@@ -13,7 +13,7 @@
 \definecolor{gnomered}{HTML}{E53935}
 \definecolor{gnomegreen}{HTML}{4CAF50}
 
-\title{\textbf{PSN-1: A Single Architecture That Learns \\to Simulate Nine Physics Domains}}
+\title{\textbf{PSN-1: A Single Architecture That Learns\\to Simulate Nine Physics Domains}}
 \author{Sehaj Singh\\[2pt]
 \small Independent Research\\
 \small \href{https://github.com/sehajr-singhs/physrnet}{github.com/sehajr-singhs/physrnet}}
@@ -23,7 +23,7 @@
 \maketitle
 
 \begin{abstract}
-Every physical system is a graph: particles carry state, interactions carry forces, and conservation laws constrain the dynamics. We present PSN-1 (Physics Systems Network), a single 157,719-parameter neural architecture that learns to simulate nine distinct physical domains simultaneously: gravity, spring dynamics, Lennard-Jones potentials, fluid mechanics, electromagnetism, quantum mechanics, heat transfer, relativistic mechanics, and ideal gas thermodynamics. PSN-1 combines E(3)-equivariant message passing with multi-head graph attention through a differentiable learned gate. On a single NVIDIA T4 GPU, PSN-1 achieves a mean test MSE of $8.7 \times 10^{-6}$ across all nine domains after 25 epochs of training (326 seconds wall time), and discovers conservation laws (energy, momentum, angular momentum) with $R^2 > 0.999$ without any labeled conservation data. The most striking result is what the gate learns: it collapses to near-zero across every domain, meaning the model discovers that learned attention captures physics better than hand-designed equivariant structure when trained across enough domains simultaneously. This finding does not invalidate equivariant architectures, which remain important for sample efficiency in low-data regimes, but it does suggest that the right inductive bias for multi-domain physics may be flexibility rather than symmetry enforcement. We release all code, trained models, simulation clips, and GPU-verified results.
+Every physical system is a graph: particles carry state, interactions carry forces, and conservation laws constrain the dynamics. We present PSN-1 (Physics Systems Network), a single 157,719-parameter neural architecture that learns to simulate nine distinct physical domains simultaneously: gravity, spring dynamics, Lennard-Jones potentials, fluid mechanics, electromagnetism, quantum mechanics, heat transfer, relativistic mechanics, and ideal gas thermodynamics. PSN-1 combines E(3)-equivariant message passing with multi-head graph attention through a differentiable learned gate. On a single NVIDIA T4 GPU, PSN-1 achieves a mean test MSE of $8.7 \times 10^{-6}$ across all nine domains after 25 epochs of training (326 seconds wall time), and discovers conservation laws (energy, momentum, angular momentum) with $R^2 > 0.999$ without any labeled conservation data. The most striking result is what the gate learns: it collapses to near-zero across every domain, meaning the model discovers that learned attention captures physics better than hand-designed equivariant structure when trained across enough domains simultaneously. This finding does not invalidate equivariant architectures, which remain important for sample efficiency in low-data regimes, but it does suggest that the right inductive bias for multi-domain physics may be flexibility rather than symmetry enforcement. We release all code, trained models, simulation clips, and GPU-verified results at \href{https://github.com/sehajr-singhs/physrnet}{github.com/sehajr-singhs/physrnet}.
 \end{abstract}
 
 \section{Introduction}
@@ -38,7 +38,7 @@ PSN-1 is our attempt to do the same for physics simulation. It takes particle po
 
 The model has two pathways: one with hard-coded E(3) symmetries (translation, rotation, permutation invariance enforced by construction), and one with learned multi-head graph attention (no symmetry constraints, the model figures out what matters from data). A differentiable gate blends them. The total parameter count is 157,719. Training uses a combination of supervised regression, physics-informed losses (Newton's third law), and unsupervised conservation discovery.
 
-Three results stand out. First, PSN-1 learns all nine domains simultaneously without performance collapse on any single one, achieving a mean MSE of $8.7 \times 10^{-6}$ across the full suite. Second, the conservation discovery module finds energy, momentum, and angular momentum conservation laws with $R^2 > 0.999$ from trajectory data alone, without being told what conservation means. Third, and most surprising, the gate collapses to near-zero across every domain, meaning the equivariant pathway contributes essentially nothing and the model relies entirely on learned attention. This is not a failure of equivariant design. It is a finding about what physics needs from a neural architecture when trained across enough domains simultaneously.
+Three results stand out. First, PSN-1 learns all nine domains simultaneously without performance collapse on any single one, achieving a mean MSE of $8.7 \times 10^{-6}$ across the full suite on a single T4 GPU in 326 seconds. Second, the conservation discovery module finds energy, momentum, and angular momentum conservation laws with $R^2 > 0.999$ from trajectory data alone, without being told what conservation means. Third, and most surprising, the gate collapses to near-zero across every domain, meaning the equivariant pathway contributes essentially nothing and the model relies entirely on learned attention.
 
 \section{Related work}
 
@@ -160,12 +160,12 @@ We report three metrics:
 
 \section{Results}
 
-\subsection{Nine-domain performance}
+\subsection{Nine-domain performance (GPU-verified)}
 
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{figs/fig2_domain_results.png}
-    \caption{\textbf{9-Domain Results (Kaggle T4 GPU, verified).} Left: prediction accuracy as $-\log_{10}(\text{MSE})$. Higher is better. Right: learned gate value per domain. Blue bars (gate $\approx 0$) indicate attention-dominated domains. All nine domains learn successfully. Mean MSE: $8.7 \times 10^{-6}$.}
+    \caption{\textbf{9-Domain Results (Kaggle T4 GPU, verified).} Left: prediction accuracy as $-\log_{10}(\text{MSE})$. Higher is better. Right: learned gate value per domain. Blue bars (gate $\approx 0$) indicate attention-dominated domains. Mean MSE: $8.7 \times 10^{-6}$.}
     \label{fig:results}
 \end{figure}
 
@@ -181,9 +181,33 @@ The intermediate domains (gravity, electromagnetism, quantum, relativistic) fall
 
 The most informative result is not the MSE values but the gate values. Every single domain converges to $\sigma(g) \approx 0$, meaning the equivariant pathway contributes essentially nothing to the prediction. The model discovered that learned attention captures all the physics it needs.
 
-This is consistent across all nine domains, from 1-particle thermodynamics (where there are no pairwise interactions at all) to 64-particle quantum mechanics (where the Schr\"{o}dinger equation requires complex-valued interactions). The gate does not vary by domain complexity, particle count, or force type. It is uniformly near-zero.
+\begin{table}[ht]
+\centering
+\caption{Per-domain gate values (GPU-verified). All gates collapse to $\approx 0$, meaning attention dominates across every physics domain.}
+\label{tab:gates}
+\small
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Domain & MSE & Gate $\sigma(g)$ \\
+\midrule
+Gravity & $1.7 \times 10^{-6}$ & $2.1 \times 10^{-10}$ \\
+Springs & $2.0 \times 10^{-5}$ & $4.1 \times 10^{-11}$ \\
+Lennard-Jones & $4.1 \times 10^{-5}$ & $3.8 \times 10^{-11}$ \\
+Fluid & $4.8 \times 10^{-7}$ & $0.0$ \\
+Electromagnetism & $4.0 \times 10^{-6}$ & $4.8 \times 10^{-16}$ \\
+Quantum & $7.8 \times 10^{-6}$ & $0.0$ \\
+Heat & $5.6 \times 10^{-8}$ & $0.0$ \\
+Relativistic & $2.5 \times 10^{-6}$ & $1.2 \times 10^{-10}$ \\
+Ideal gas & $2.6 \times 10^{-7}$ & $1.8 \times 10^{-7}$ \\
+\midrule
+\textbf{Mean} & $\mathbf{8.7 \times 10^{-6}}$ & $\mathbf{\approx 0}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-We interpret this as follows: the equivariant pathway encodes a specific set of symmetries (E(3) invariance) that \emph{all} nine domains satisfy, but the attention pathway can learn to \emph{approximately} satisfy those same symmetries from data while also capturing domain-specific patterns that equivariance cannot represent (dissipative forces, boundary conditions, non-conservative interactions). When trained across enough domains simultaneously, the attention pathway's flexibility outweighs the equivariant pathway's inductive bias.
+Table~\ref{tab:gates} shows the full gate breakdown. The gate is uniformly near-zero across all nine domains, from 1-particle thermodynamics (where there are no pairwise interactions at all) to 64-particle quantum mechanics (where the Schr\"{o}dinger equation requires complex-valued interactions). The gate does not vary by domain complexity, particle count, or force type.
+
+We interpret this as follows: the equivariant pathway encodes a specific set of symmetries (E(3) invariance) that all nine domains satisfy, but the attention pathway can learn to approximately satisfy those same symmetries from data while also capturing domain-specific patterns that equivariance cannot represent (dissipative forces, boundary conditions, non-conservative interactions). When trained across enough domains simultaneously, the attention pathway's flexibility outweighs the equivariant pathway's inductive bias.
 
 This does not mean equivariant architectures are useless. In low-data regimes (fewer than 10 training trajectories), the equivariant pathway's hard-coded symmetries provide a strong inductive bias that reduces sample complexity. But with 40 training samples per domain and multi-domain training, the attention pathway has enough signal to learn the symmetries on its own.
 
@@ -192,7 +216,7 @@ This does not mean equivariant architectures are useless. In low-data regimes (f
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{figs/fig4_conservation.png}
-    \caption{\textbf{Unsupervised Conservation Discovery.} PSN-1 discovers three fundamental conservation laws from trajectory data alone, with $R^2 > 0.999$ for energy, momentum, and angular momentum. No conservation data is provided during training. The model learns that physics has conserved quantities and figures out which ones they are.}
+    \caption{\textbf{Unsupervised Conservation Discovery.} PSN-1 discovers three fundamental conservation laws from trajectory data alone, with $R^2 > 0.999$ for energy, momentum, and angular momentum. No conservation data is provided during training.}
     \label{fig:conservation}
 \end{figure}
 
@@ -207,7 +231,7 @@ This finding has practical implications. In scientific computing, conservation e
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{figs/fig3_training_curve.png}
-    \caption{\textbf{Training convergence.} The model converges from an initial loss of $2.2 \times 10^{10}$ (dominated by the physics-informed term for random predictions) to a final loss of $0.0012$ in 25 epochs. Most of the improvement happens in the first 5 epochs, with the remaining epochs refining the solution. Total wall time: 326 seconds on a single T4 GPU.}
+    \caption{\textbf{Training convergence.} Loss from $2.2 \times 10^{10}$ to $0.0012$ in 25 epochs. Most improvement in the first 5 epochs. Total wall time: 326 seconds on a single T4 GPU.}
     \label{fig:training}
 \end{figure}
 
@@ -220,25 +244,11 @@ The convergence is stable across all nine domains simultaneously. We do not obse
 \begin{figure}[ht]
     \centering
     \includegraphics[width=\columnwidth]{figs/fig5_radar.png}
-    \caption{\textbf{Radar chart of domain coverage.} Normalized $-\log_{10}(\text{MSE})$ shows roughly uniform performance across all nine physics domains. The model does not sacrifice performance on one domain to gain performance on another, which is the key property of a general-purpose physics model.}
+    \caption{\textbf{Radar chart of domain coverage.} Normalized $-\log_{10}(\text{MSE})$ shows roughly uniform performance across all nine physics domains. The model does not sacrifice performance on one domain to gain performance on another.}
     \label{fig:radar}
 \end{figure}
 
 Figure~\ref{fig:radar} shows the radar chart of performance across all nine domains. The coverage is roughly uniform, confirming that the model does not trade off performance between domains. This is the defining property that separates a general-purpose model from a collection of domain-specific ones.
-
-\section{What becomes possible}
-
-When a single architecture can simulate nine physics domains simultaneously, several new capabilities emerge that are difficult or impossible with domain-specific solvers.
-
-\textbf{Cross-domain transfer.} Train on gravity, fine-tune on Lennard-Jones with 5$\times$ less data. The learned representations transfer across physics regimes because the underlying graph structure (particles, interactions, forces) is shared.
-
-\textbf{Coupled systems.} Simulate thermo-mechanical coupling without separate solvers for heat transfer and structural mechanics. The model can learn to couple them because it has seen both domains.
-
-\textbf{Conservation discovery.} Automatically identify conserved quantities from trajectory data. This is useful for experimental physics, where the conservation laws of a new system may not be known a priori.
-
-\textbf{Rapid prototyping.} Test physics hypotheses without building domain-specific simulation infrastructure. The model serves as a differentiable physics engine that can be integrated into larger optimization or inference pipelines.
-
-\textbf{Differentiable simulation.} Because PSN-1 is a neural network, its predictions are differentiable with respect to its inputs. This enables gradient-based optimization of physical systems (design optimization, control, inverse problems) without adjoint methods or manual gradient computation.
 
 \section{Ablation}
 
@@ -253,9 +263,9 @@ We ablate PSN-1 on the gravity domain (4 particles, 50 time steps) to understand
 \toprule
 Configuration & MSE & Gate \\
 \midrule
-Full model & $1.7 \times 10^{-6}$ & 2.1e-10 \\
-No physics loss & $2.3 \times 10^{-6}$ & 3.5e-10 \\
-No conservation loss & $1.9 \times 10^{-6}$ & 2.8e-10 \\
+Full model & $1.7 \times 10^{-6}$ & $2.1\text{e-}10$ \\
+No physics loss & $2.3 \times 10^{-6}$ & $3.5\text{e-}10$ \\
+No conservation loss & $1.9 \times 10^{-6}$ & $2.8\text{e-}10$ \\
 Equivariant only (fixed $g=1$) & $4.2 \times 10^{-4}$ & 1.000 \\
 Attention only (fixed $g=0$) & $1.5 \times 10^{-6}$ & 0.000 \\
 Single domain (gravity only) & $8.1 \times 10^{-7}$ & 0.003 \\
@@ -270,7 +280,21 @@ Three findings from the ablation:
 
 \textbf{The attention pathway alone is sufficient.} Fixing $g = 0$ (attention only) produces nearly identical performance to the full model, confirming the gate finding that the equivariant pathway contributes nothing in the multi-domain setting.
 
-\textbf{Multi-domain training matters.} Training on gravity alone produces better gravity performance ($8.1 \times 10^{-7}$) than multi-domain training ($1.7 \times 10^{-6}$), but at the cost of requiring separate models for each domain. The 2$\times$ accuracy reduction is the price of generality. With 10$\times$ fewer samples, the gate moves from 0 to 0.12, indicating that the equivariant pathway starts contributing when data is scarce, which is exactly the regime where equivariant architectures are designed to help.
+\textbf{Multi-domain training matters.} Training on gravity alone produces better gravity performance ($8.1 \times 10^{-7}$) than multi-domain training ($1.7 \times 10^{-6}$), but at the cost of requiring separate models for each domain. The $2\times$ accuracy reduction is the price of generality. With $10\times$ fewer samples, the gate moves from 0 to 0.12, indicating that the equivariant pathway starts contributing when data is scarce, which is exactly the regime where equivariant architectures are designed to help.
+
+\section{What becomes possible}
+
+When a single architecture can simulate nine physics domains simultaneously, several new capabilities emerge that are difficult or impossible with domain-specific solvers.
+
+\textbf{Cross-domain transfer.} Train on gravity, fine-tune on Lennard-Jones with $5\times$ less data. The learned representations transfer across physics regimes because the underlying graph structure (particles, interactions, forces) is shared.
+
+\textbf{Coupled systems.} Simulate thermo-mechanical coupling without separate solvers for heat transfer and structural mechanics. The model can learn to couple them because it has seen both domains.
+
+\textbf{Conservation discovery.} Automatically identify conserved quantities from trajectory data. This is useful for experimental physics, where the conservation laws of a new system may not be known a priori.
+
+\textbf{Rapid prototyping.} Test physics hypotheses without building domain-specific simulation infrastructure. The model serves as a differentiable physics engine that can be integrated into larger optimization or inference pipelines.
+
+\textbf{Differentiable simulation.} Because PSN-1 is a neural network, its predictions are differentiable with respect to its inputs. This enables gradient-based optimization of physical systems (design optimization, control, inverse problems) without adjoint methods or manual gradient computation.
 
 \section{Limitations}
 
@@ -303,12 +327,12 @@ The next step is obvious: scale. PSN-1 at 158K parameters is a proof of concept.
 \bibitem{raissi2019} Raissi, M. et al. Physics-informed neural networks. \textit{Journal of Computational Physics} (2019).
 \bibitem{cranmer2020} Cranmer, M. et al. Discovering symbolic models from deep learning with inductive biases. \textit{NeurIPS} (2020).
 \bibitem{liu2023} Liu, Y. et al. Theory-guided graph neural networks for scientific problems. \textit{Nature Computational Science} (2023).
-\bibitem{velickovic2018} Veli\v{c}kovi\'c, P. et al. Graph attention networks. \textit{ICLR} (2018).
+\bibitem{velickovic2018} Veli\v{c}kovi\'{c}, P. et al. Graph attention networks. \textit{ICLR} (2018).
 \bibitem{kipf2017} Kipf, T. N. \& Welling, M. Semi-supervised classification with graph convolutional networks. \textit{ICLR} (2017).
 \bibitem{vaswani2017} Vaswani, A. et al. Attention is all you need. \textit{NeurIPS} (2017).
 \bibitem{gnome} Merchant, A. et al. Scaling deep learning for materials discovery (GNoME). \textit{Nature} (2023).
-\bibitem{noe2019} No\'e, F. et al. Boltzmann generators. \textit{Science} (2019).
-\bibitem{stefanovic2023} Stefanovi\'c, J. L. et al. TorchMD-NET. \textit{NeurIPS} (2023).
+\bibitem{noe2019} No\'{e}, F. et al. Boltzmann generators. \textit{Science} (2019).
+\bibitem{stefanovic2023} Stefanovi\'{c}, J. L. et al. TorchMD-NET. \textit{NeurIPS} (2023).
 \bibitem{batzner2022} Batzner, S. et al. E(3)-equivariant graph neural networks for data-efficient atomistic simulations. \textit{Nature Communications} (2022).
 \bibitem{bapst2020} Bapst, V. \& Sanchez-Gonzalez, A. Unsupervised learning of graph matching. \textit{ICLR} (2020).
 \bibitem{zhang2023} Zhang, L. et al. Learning equivariant representations for physical simulations. \textit{Nature Machine Intelligence} (2023).
