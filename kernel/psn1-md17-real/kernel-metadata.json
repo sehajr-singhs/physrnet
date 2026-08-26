@@ -1,0 +1,13 @@
+{
+  "id": "sehajrsingh/psn1-md17-real",
+  "title": "psn1-md17-real",
+  "code_file": "psn1_real_md.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}
