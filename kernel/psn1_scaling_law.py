@@ -36,8 +36,8 @@ DOMAIN_CONFIGS = {
 
 # 4 model sizes
 SCALES = {
-    "1K":   {"hidden": 16,  "n_scalar": 2, "n_heads": 2},
-    "10K":  {"hidden": 32,  "n_scalar": 4, "n_heads": 2},
+    "2K":   {"hidden": 32,  "n_scalar": 4, "n_heads": 2},
+    "10K":  {"hidden": 64,  "n_scalar": 8, "n_heads": 2},
     "50K":  {"hidden": 64,  "n_scalar": 8, "n_heads": 4},
     "157K": {"hidden": 128, "n_scalar": 8, "n_heads": 4},
 }
@@ -191,11 +191,17 @@ if __name__ == "__main__":
     for name, cfg in SCALES.items():
         all_results[name] = train_scale(name, cfg)
 
-    # power law fit
-    params = np.array([v["params"] for v in all_results.values()])
-    mses = np.array([v["mean_mse"] for v in all_results.values()])
-    log_p = np.log10(params); log_m = np.log10(mses)
-    alpha, log_A = np.polyfit(log_p, log_m, 1)
+    # power law fit (skip NaN scales)
+    all_mses = np.array([v["mean_mse"] for v in all_results.values()])
+    all_params = np.array([v["params"] for v in all_results.values()])
+    finite = np.isfinite(all_mses) & (all_mses > 0)
+    params = all_params[finite]
+    mses = all_mses[finite]
+    if len(params) >= 2:
+        log_p = np.log10(params); log_m = np.log10(mses)
+        alpha, log_A = np.polyfit(log_p, log_m, 1)
+    else:
+        alpha, log_A = 0.0, 0.0
 
     print(f"\n{'='*60}")
     print("  SCALING LAW SUMMARY")

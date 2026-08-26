@@ -146,7 +146,7 @@ if __name__ == "__main__":
     print("  Phase 1: Pretrain on gravity (30 epochs)")
     print("="*60)
     model = PSNUniversal(n_particles=max_particles, hidden=128, n_scalar=8,
-                         n_heads=4, n_domains=2, domain_emb_dim=16).to(DEVICE)
+                         n_heads=4, n_domains=9, domain_emb_dim=16).to(DEVICE)
     gravity_batches = []
     for b in build_batches(gravity_data, BATCH_SIZE):
         b["domain"] = "gravity"
@@ -171,7 +171,7 @@ if __name__ == "__main__":
 
         # Load pretrained weights (domain embedding dims may differ, skip mismatched)
         model_ft = PSNUniversal(n_particles=max_particles, hidden=128, n_scalar=8,
-                                n_heads=4, n_domains=2, domain_emb_dim=16).to(DEVICE)
+                                n_heads=4, n_domains=9, domain_emb_dim=16).to(DEVICE)
         # Copy compatible weights
         pretrained_compat = {}
         ft_state = model_ft.state_dict()
@@ -206,7 +206,7 @@ if __name__ == "__main__":
         lj_subset = {k: v[:n_lj] if hasattr(v, '__getitem__') and not isinstance(v, float) else v for k, v in lj_data.items()}
 
         model_scratch = PSNUniversal(n_particles=max_particles, hidden=128, n_scalar=8,
-                                      n_heads=4, n_domains=2, domain_emb_dim=16).to(DEVICE)
+                                      n_heads=4, n_domains=9, domain_emb_dim=16).to(DEVICE)
         sc_batches = []
         for b in build_batches(lj_subset, BATCH_SIZE):
             b["domain"] = "lennard_jones"
