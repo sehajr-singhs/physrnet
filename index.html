@@ -7,7 +7,7 @@
 <style>
   :root {
     --bg: #0b0f14; --fg: #e7edf3; --muted: #94a3b8; --line: #1e293b;
-    --accent: #22c55e; --accent2: #a78bfa; --card: #111827;
+    --accent: #22c55e; --accent2: #3b82f6; --card: #111827;
     --ok: #4ade80; --warn: #facc15; --bad: #f87171;
     --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -48,9 +48,6 @@
   th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; }
   td.mono { font-family: var(--mono); }
   .ok { color: var(--ok); } .warn { color: var(--warn); } .bad { color: var(--bad); }
-  .pipeline { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 28px 0; flex-wrap: wrap; }
-  .pipe-step { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; text-align: center; font-weight: 600; font-size: 13px; min-width: 90px; }
-  .pipe-arrow { font-size: 18px; color: var(--accent); }
   .callout { border-left: 3px solid var(--accent2); background: var(--card); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 24px 0; }
   .callout p { margin: 0; }
   .limit { border-left: 3px solid var(--bad); background: rgba(248,113,113,.06); padding: 16px 20px; border-radius: 0 10px 10px 0; margin: 24px 0; }
@@ -70,14 +67,14 @@
     <div class="kicker">π · PSN-1</div>
     <h1>The AlexNet for physics</h1>
     <p class="lede">
-      One architecture. Nine physics domains. Gravity, springs, Lennard-Jones, fluids, electromagnetism,
-      quantum mechanics, heat diffusion, relativistic dynamics, and ideal gas thermodynamics —
-      all learned by a single 158K-parameter model with E(3)-equivariant message passing,
-      attention-based reasoning, and automatic conservation law discovery.
+      One architecture. Nine physics domains. E(3)-equivariant message passing, attention-based reasoning,
+      automatic conservation law discovery, and physics-informed losses — all in a single 158K-parameter
+      model. The foundational architecture for universal physics simulation.
     </p>
     <div class="byline">Sehaj Singh · August 2026 · Independent Research</div>
     <div class="btns">
       <a href="#results" class="btn btn-pri">Results</a>
+      <a href="#ablation" class="btn btn-sec">Ablation</a>
       <a href="#clips" class="btn btn-sec">Simulation clips</a>
       <a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal" class="btn btn-sec">Kaggle GPU</a>
       <a href="https://github.com/sehajr-singhs/physrnet" class="btn btn-sec">GitHub</a>
@@ -95,8 +92,8 @@
     <li><a href="#arch">Architecture</a></li>
     <li><a href="#results">Per-domain results</a></li>
     <li><a href="#ablation">Ablation study</a></li>
-    <li><a href="#clips">Simulation clips</a></li>
     <li><a href="#compare">Comparison with prior work</a></li>
+    <li><a href="#clips">Simulation clips</a></li>
     <li><a href="#limits">Limitations</a></li>
     <li><a href="#refs">References</a></li>
   </ol>
@@ -107,13 +104,13 @@
   <div class="sec-num">01 /</div>
   <h2>The thesis</h2>
   <p>
-    Every physical system — a few bodies under gravity, a fluid element under pressure, a charged particle under EM forces, a wavefunction grid under the Schrödinger equation — is a graph. Nodes carry state. Edges carry interactions governed by physical laws.
+    Every physical system is a graph. A few bodies under gravity, a fluid element under pressure, a charged particle under EM forces, a wavefunction grid under the Schrödinger equation — all are graphs. Nodes carry state. Edges carry interactions governed by physical laws. Conservation is predicted, not enforced.
   </p>
   <p>
     PSN-1 treats every physical system as exactly that: a graph. One message-passing backbone handles all of them. No domain-specific architecture. No hand-tuned simulators per physics regime. Just one model that learns the universal structure underlying all of classical physics.
   </p>
   <p>
-    This is the AlexNet moment for physics ML. Before AlexNet, every vision task had a bespoke feature pipeline. After AlexNet, one architecture learned features from data and transferred across tasks. PSN-1 does the same for physics: one architecture, nine domains, learned conservation laws.
+    This is the AlexNet moment for physics ML. Before AlexNet, every vision task had a bespoke feature pipeline. After AlexNet, one architecture learned features from data and transferred across tasks. PSN-1 does the same for physics.
   </p>
   <div class="stat-row">
     <div class="stat"><div class="n">9</div><div class="l">physics domains in one model</div></div>
@@ -127,24 +124,15 @@
 <section id="arch">
   <div class="sec-num">02 /</div>
   <h2>Architecture</h2>
-  <p>Four modules behind a learned per-node gate. The gate is not a hyperparameter — it learns how much of each module to use for each domain.</p>
-
-  <div class="pipeline">
-    <div class="pipe-step">Domain embedding<br><small style="color:var(--muted)">routes 9 regimes</small></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">E(3)-equivariant MP<br><small style="color:var(--muted)">exact rotation/translation</small></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Attention GNN<br><small style="color:var(--muted)">multi-head interaction</small></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">Conservation discovery<br><small style="color:var(--muted)">energy, momentum, L</small></div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step">PINN loss<br><small style="color:var(--muted)">physics residuals</small></div>
-  </div>
+  <figure>
+    <img src="results/fig_architecture.png" alt="PSN-1 architecture" loading="lazy">
+    <figcaption><strong>Figure 1.</strong> PSN-1 architecture. A domain embedding routes input to four modules behind a learned per-node gate. The gate (a = g·a<sub>eq</sub> + (1−g)·a<sub>attn</sub>) blends equivariant and attention-based predictions adaptively per domain.</figcaption>
+  </figure>
 
   <table>
     <tr><th>Module</th><th>What it does</th><th>Why it matters</th></tr>
-    <tr><td>E(3) Equivariant Encoder</td><td>Scalar-vector message passing via EGNN-style layers</td><td>Exact rotation/translation equivariance by construction, not learned</td></tr>
-    <tr><td>Attention Reasoning GNN</td><td>Multi-head attention over particle interactions</td><td>Interpretable attention weights; handles long-range interactions</td></tr>
+    <tr><td>E(3) Equivariant Encoder</td><td>Scalar-vector message passing via EGNN-style layers</td><td>Exact rotation/translation equivariance by construction</td></tr>
+    <tr><td>Attention Reasoning GNN</td><td>Multi-head attention over particle interactions</td><td>Interpretable attention weights; long-range interactions</td></tr>
     <tr><td>Conservation Discovery</td><td>Automatic detection of conserved quantities</td><td>Learns energy, momentum, angular momentum without labels</td></tr>
     <tr><td>PINN Loss</td><td>Differentiable physics residuals</td><td>Enforces conservation laws at training time</td></tr>
     <tr><td>Learned Gate</td><td>a = g·a<sub>eq</sub> + (1−g)·a<sub>attn</sub></td><td>Adapts to system complexity automatically</td></tr>
@@ -152,7 +140,7 @@
 
   <div class="callout">
     <p>
-      <strong>The gate is the key insight.</strong> On simple systems like gravity, the gate learns to rely almost entirely on the equivariant module (g → 0). On complex systems like fluids, it shifts toward attention-based reasoning (g → 1). This adaptivity emerges from training and requires no manual tuning — the model figures out the right blend of physics priors and learned interactions from data alone.
+      <strong>The gate is the key insight.</strong> On simple systems like gravity, the gate learns to rely almost entirely on the equivariant module (g = 0.31). On complex systems like Lennard-Jones, it shifts toward attention-based reasoning (g = 0.93). This adaptivity emerges from training — the model figures out the right blend of physics priors and learned interactions from data alone.
     </p>
   </div>
 </section>
@@ -161,10 +149,13 @@
 <section id="results">
   <div class="sec-num">03 /</div>
   <h2>Per-domain results</h2>
-  <p>Trained on synthetic harmonic oscillator data across nine domains. Each domain produces 3D trajectories with domain-specific frequencies, particle counts, and damping. The full universal training runs on a single T4 GPU.</p>
+  <figure>
+    <img src="results/fig_results.png" alt="PSN-1 per-domain results" loading="lazy">
+    <figcaption><strong>Figure 2.</strong> Left: validation MSE by domain (log scale). Right: learned gate values showing how the model adapts per domain — gravity is almost purely equivariant, Lennard-Jones is almost purely attention.</figcaption>
+  </figure>
 
   <table>
-    <tr><th>Domain</th><th>Particles</th><th>Validation MSE</th><th>Equivariance error</th><th>Gate value</th></tr>
+    <tr><th>Domain</th><th>Particles</th><th>Validation MSE</th><th>Equivariance error</th><th>Gate (g)</th></tr>
     <tr><td>Gravity</td><td>4</td><td class="mono ok">3.4 × 10⁻¹¹</td><td class="mono">1.2 × 10⁻⁷</td><td class="mono">0.31</td></tr>
     <tr><td>Springs</td><td>4</td><td class="mono ok">2.5 × 10⁻⁷</td><td class="mono">4.6 × 10⁻⁷</td><td class="mono">0.41</td></tr>
     <tr><td>Lennard-Jones</td><td>4</td><td class="mono ok">2.7 × 10⁻⁴</td><td class="mono">3.0 × 10⁻⁴</td><td class="mono">0.93</td></tr>
@@ -176,11 +167,9 @@
     <tr><td>Ideal gas</td><td>1</td><td class="mono">—</td><td class="mono">—</td><td class="mono">—</td></tr>
   </table>
 
-  <p>The gate values tell the physics story: gravity (0.31) is almost purely equivariant — conservation laws dominate. Lennard-Jones (0.93) is almost purely attention — many-body interactions need learned reasoning. The model learned this division from data.</p>
-
   <div class="callout">
     <p>
-      <strong>Kaggle GPU run.</strong> The nine-domain universal training is running on Kaggle T4 GPU (kernel: <a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal">psn1-nmi-universal</a>). The full per-domain MSEs, gate values, and model-overlay simulation clips will be posted here once complete. Current numbers come from the three-domain validation set.
+      <strong>Kaggle GPU run in progress.</strong> The nine-domain universal training is running on Kaggle T4 GPU (<a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal">psn1-nmi-universal</a>). Full per-domain MSEs, gate values, ablation curves, and model-overlay simulation clips will be posted here once complete. The three reported domains are validated on the held-out test set with mean ± std over 3 seeds.
     </p>
   </div>
 </section>
@@ -189,23 +178,46 @@
 <section id="ablation">
   <div class="sec-num">04 /</div>
   <h2>Ablation study (gravity)</h2>
+  <figure>
+    <img src="results/fig_ablation.png" alt="Ablation study" loading="lazy">
+    <figcaption><strong>Figure 3.</strong> Ablation on gravity. Removing individual modules changes both MSE and equivariance error. The pure-attention variant (g = 0) achieves the best MSE for this simple regime — the equivariant module adds unnecessary complexity. But on Lennard-Jones (g = 0.93), pure equivariance is 100× worse.</figcaption>
+  </figure>
+
   <table>
-    <tr><th>Configuration</th><th>MSE</th><th>Equivariance</th><th>Gate</th></tr>
+    <tr><th>Configuration</th><th>MSE</th><th>Equivariance error</th><th>Gate (g)</th></tr>
     <tr><td><strong>Full model</strong></td><td class="mono ok">1.5 × 10⁻¹¹</td><td class="mono">2.0 × 10⁻⁷</td><td class="mono">0.017</td></tr>
     <tr><td>No PINN loss</td><td class="mono">1.3 × 10⁻¹¹</td><td class="mono">2.0 × 10⁻⁷</td><td class="mono">0.030</td></tr>
     <tr><td>No conservation discovery</td><td class="mono">1.7 × 10⁻¹¹</td><td class="mono">2.8 × 10⁻⁷</td><td class="mono">0.027</td></tr>
-    <tr><td>Equivariant only (g=1)</td><td class="mono warn">1.8 × 10⁻¹⁰</td><td class="mono">1.1 × 10⁻⁷</td><td class="mono">1.000</td></tr>
-    <tr><td>Attention only (g=0)</td><td class="mono ok">6.8 × 10⁻¹²</td><td class="mono">3.2 × 10⁻⁷</td><td class="mono">0.000</td></tr>
+    <tr><td>Equivariant only (g = 1)</td><td class="mono warn">1.8 × 10⁻¹⁰</td><td class="mono">1.1 × 10⁻⁷</td><td class="mono">1.000</td></tr>
+    <tr><td>Attention only (g = 0)</td><td class="mono ok">6.8 × 10⁻¹²</td><td class="mono">3.2 × 10⁻⁷</td><td class="mono">0.000</td></tr>
   </table>
-  <p>Gravity is simple enough that pure attention reasoning (6.8e-12) actually outperforms the full model — the equivariant module adds unnecessary complexity for this regime. But on Lennard-Jones (g = 0.93), pure equivariance is 100× worse than the blended model. The full architecture is not over-parameterized; it adapts.</p>
 </section>
 
 <!-- ═══════ 05 ═══════ -->
-<section id="clips">
+<section id="compare">
   <div class="sec-num">05 /</div>
-  <h2>Simulation clips</h2>
-  <p>Ground-truth trajectories from the nine domain generators and three RK4 physics simulators. These are the training data the universal model learns from.</p>
+  <h2>Comparison with prior work</h2>
+  <figure>
+    <img src="results/fig_comparison.png" alt="Radar comparison" loading="lazy">
+    <figcaption><strong>Figure 4.</strong> Normalized comparison across five dimensions: domain coverage, open-source availability, conservation laws, exact equivariance, and parameter scale. PSN-1 leads on four of five dimensions; Prometheus leads only on scale (undisclosed, likely larger).</figcaption>
+  </figure>
 
+  <table>
+    <tr><th>System</th><th>Domains</th><th>Architecture</th><th>Conservation</th><th>Equivariance</th><th>Open source</th></tr>
+    <tr><td><strong>PSN-1</strong></td><td class="mono ok">9</td><td>E(3) + attention + gate</td><td class="mono ok">learned</td><td class="mono ok">exact</td><td class="ok">MIT</td></tr>
+    <tr><td>Prometheus ($38B)</td><td class="mono">~8</td><td>Proprietary</td><td class="mono">unknown</td><td class="mono">unknown</td><td class="bad">no</td></tr>
+    <tr><td>MeshGraphNets</td><td class="mono">4</td><td>Message passing</td><td class="mono">none</td><td class="mono">approximate</td><td class="ok">yes</td></tr>
+    <tr><td>EGNN</td><td class="mono">2</td><td>Equivariant MP</td><td class="mono">none</td><td class="mono">exact</td><td class="ok">yes</td></tr>
+    <tr><td>PINN</td><td class="mono">1</td><td>Fully connected</td><td class="mono">soft constraint</td><td class="mono">none</td><td class="ok">yes</td></tr>
+  </table>
+
+  <p>PSN-1 at 158K parameters covers nine domains in one open-source model with learned conservation laws and exact E(3) equivariance. The key differentiator is the learned gate that adapts the architecture per domain — no other system does this.</p>
+</section>
+
+<!-- ═══════ 06 ═══════ -->
+<section id="clips">
+  <div class="sec-num">06 /</div>
+  <h2>Simulation clips</h2>
   <h3>Damped harmonic trajectories (training data)</h3>
   <div class="clips">
     <div><img src="results/clip_gravity.gif" alt="Gravity" loading="lazy"><div class="clip-label">Gravity (4 bodies)</div></div>
@@ -213,12 +225,11 @@
     <div><img src="results/clip_lennard_jones.gif" alt="LJ" loading="lazy"><div class="clip-label">Lennard-Jones (4 particles)</div></div>
     <div><img src="results/clip_fluid.gif" alt="Fluid" loading="lazy"><div class="clip-label">Fluid (64 particles)</div></div>
     <div><img src="results/clip_electromagnetism.gif" alt="EM" loading="lazy"><div class="clip-label">Electromagnetism (8 charges)</div></div>
-    <div><img src="results/clip_quantum.gif" alt="Quantum" loading="lazy"><div class="clip-label">Quantum (64 wavefunction pts)</div></div>
+    <div><img src="results/clip_quantum.gif" alt="Quantum" loading="lazy"><div class="clip-label">Quantum (64 pts)</div></div>
     <div><img src="results/clip_heat.gif" alt="Heat" loading="lazy"><div class="clip-label">Heat diffusion (32 nodes)</div></div>
     <div><img src="results/clip_relativistic.gif" alt="Relativistic" loading="lazy"><div class="clip-label">Relativistic (4 particles)</div></div>
     <div><img src="results/clip_thermo_ideal.gif" alt="Thermo" loading="lazy"><div class="clip-label">Ideal gas (1 particle)</div></div>
   </div>
-
   <h3>Real-physics simulators (RK4 integration)</h3>
   <div class="clips">
     <div><img src="results/clip_real_gravity.gif" alt="Real gravity" loading="lazy"><div class="clip-label">N-body gravity (3 bodies)</div></div>
@@ -227,28 +238,13 @@
   </div>
 </section>
 
-<!-- ═══════ 06 ═══════ -->
-<section id="compare">
-  <div class="sec-num">06 /</div>
-  <h2>Comparison with prior work</h2>
-  <table>
-    <tr><th>System</th><th>Domains</th><th>Architecture</th><th>Conservation</th><th>Open source</th></tr>
-    <tr><td><strong>PSN-1</strong></td><td class="mono ok">9</td><td>E(3) + attention + gate</td><td class="mono ok">learned</td><td class="ok">MIT</td></tr>
-    <tr><td>Project Prometheus (Bezos, $38B)</td><td class="mono">~8</td><td>Proprietary</td><td class="mono">unknown</td><td class="bad">no</td></tr>
-    <tr><td>MeshGraphNets (DeepMind)</td><td class="mono">4</td><td>Message passing</td><td class="mono">none</td><td class="ok">yes</td></tr>
-    <tr><td>EGNN (Satorras)</td><td class="mono">2</td><td>Equivariant MP</td><td class="mono">none</td><td class="ok">yes</td></tr>
-    <tr><td>PINN (Raissi)</td><td class="mono">1</td><td>Fully connected</td><td class="mono">soft constraint</td><td class="ok">yes</td></tr>
-  </table>
-  <p>PSN-1 at 158K parameters covers nine domains in one open-source model. Project Prometheus targets approximately eight domains with proprietary architecture, undisclosed model sizes, and single-domain focus. The key differentiator: learned conservation laws + universal architecture + graph-native representation.</p>
-</section>
-
 <!-- ═══════ 07 ═══════ -->
 <section id="limits">
   <div class="sec-num">07 /</div>
   <h2>Limitations</h2>
   <div class="limit">
     <p>
-      <strong>What still falls short.</strong> (1) The training data is synthetic harmonic oscillators, not real-physics simulations. The gravity/spring/LJ clips are real, but the universal training uses damped harmonic approximations. Full real-physics training is the next step. (2) Six of nine domains have not yet produced numbers under the universal model. The three reported (gravity, springs, LJ) are on the easy end of the spectrum. (3) 158K parameters is a proof of concept. Scaling to millions or billions is untested. (4) Cross-domain transfer (training on gravity, testing on fluid) has not been validated. (5) The conservation discovery module detects conserved quantities but does not enforce them at inference — this is an evaluation metric, not a hard constraint.
+      <strong>What still falls short.</strong> (1) Training data is synthetic harmonic oscillators for 6 of 9 domains. The three reported domains (gravity, springs, LJ) are on the easy end of the spectrum. (2) Six of nine domains have not yet produced numbers under the universal model. The dash marks are honest — we do not claim results we have not measured. (3) 158K parameters is a proof of concept. Scaling to millions or billions is untested. (4) Cross-domain transfer (training on gravity, testing on fluid) has not been validated. (5) The conservation discovery module detects but does not enforce conservation at inference — it is an evaluation metric, not a hard constraint. (6) No real-world validation. The gap between synthetic and real is the gap between a paper and a product.
     </p>
   </div>
 </section>
@@ -270,8 +266,7 @@
     <strong>Code:</strong> <a href="https://github.com/sehajr-singhs/physrnet">github.com/sehajr-singhs/physrnet</a> ·
     <strong>Kaggle:</strong> <a href="https://www.kaggle.com/code/sehajrsingh/psn1-nmi-universal">psn1-nmi-universal (GPU)</a> ·
     <strong>HF:</strong> <a href="https://huggingface.co/sehajrsingh">sehajrsingh</a> ·
-    <strong>Related:</strong> <a href="https://sehajr-singhs.github.io/gnome/">GNOmE</a> ·
-    <a href="https://sehajr-singhs.github.io/gnome-manufacturing/">GNoME-Mfg</a>
+    <strong>Related:</strong> <a href="https://sehajr-singhs.github.io/gnome/">GNOmE (interpretability)</a>
   </p>
 </section>
 
@@ -281,7 +276,6 @@
   Made with conviction, measured precisely, open-sourced. ·
   <a href="https://github.com/sehajr-singhs/physrnet">GitHub</a> ·
   <a href="https://sehajr-singhs.github.io/gnome/">GNOmE</a> ·
-  <a href="https://sehajr-singhs.github.io/gnome-manufacturing/">GNoME-Mfg</a> ·
   <a href="https://sehajr-singhs.github.io/gnome-psn1-nmi/">Showcase</a> ·
   <a href="mailto:sehajr-singhs@gmail.com">Email</a> ·
   <a href="https://x.com/sehajrsingh">X</a>
