@@ -167,7 +167,7 @@ if __name__ == "__main__":
     finetune_results = {}
     for frac in DATA_FRACS:
         n_lj = max(1, int(N_TRAIN_FULL * frac))
-        lj_subset = {k: v[:n_lj] for k, v in lj_data.items()}
+        lj_subset = {k: v[:n_lj] if hasattr(v, '__getitem__') and not isinstance(v, float) else v for k, v in lj_data.items()}
 
         # Load pretrained weights (domain embedding dims may differ, skip mismatched)
         model_ft = PSNUniversal(n_particles=max_particles, hidden=128, n_scalar=8,
@@ -203,7 +203,7 @@ if __name__ == "__main__":
     scratch_results = {}
     for frac in DATA_FRACS:
         n_lj = max(1, int(N_TRAIN_FULL * frac))
-        lj_subset = {k: v[:n_lj] for k, v in lj_data.items()}
+        lj_subset = {k: v[:n_lj] if hasattr(v, '__getitem__') and not isinstance(v, float) else v for k, v in lj_data.items()}
 
         model_scratch = PSNUniversal(n_particles=max_particles, hidden=128, n_scalar=8,
                                       n_heads=4, n_domains=2, domain_emb_dim=16).to(DEVICE)
