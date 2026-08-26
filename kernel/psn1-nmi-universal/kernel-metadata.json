@@ -1,0 +1,13 @@
+{
+  "id": "sehajrsingh/psn1-nmi-universal",
+  "title": "psn1-nmi-universal",
+  "code_file": "psn1-nmi-universal.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}
