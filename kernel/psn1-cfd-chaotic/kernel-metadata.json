@@ -1,0 +1,13 @@
+{
+  "id": "sehajrsingh/psn1-cfd-chaotic",
+  "title": "psn1-cfd-chaotic",
+  "code_file": "psn1_cfd.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": true,
+  "enable_internet": true,
+  "dataset_sources": [],
+  "competition_sources": [],
+  "kernel_sources": []
+}
