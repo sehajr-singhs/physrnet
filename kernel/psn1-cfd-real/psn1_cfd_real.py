@@ -258,7 +258,7 @@ class PSN1(nn.Module):
         self.attn_blocks = nn.ModuleList()
         for _ in range(n_layers):
             self.equiv_blocks.append(nn.Sequential(
-                nn.Linear(hid_dim + 4, hid_dim), nn.SiLU(), nn.Linear(hid_dim, hid_dim)
+                nn.Linear(hid_dim * 2 + 1, hid_dim), nn.SiLU(), nn.Linear(hid_dim, hid_dim)
             ))
             self.attn_blocks.append(nn.MultiheadAttention(hid_dim, n_heads, batch_first=True))
         
@@ -334,23 +334,24 @@ class GNS(nn.Module):
         self.msg_nets = nn.ModuleList([nn.Sequential(
             nn.Linear(hid_dim * 2 + 1, hid_dim), nn.SiLU(), nn.Linear(hid_dim, hid_dim)
         ) for _ in range(n_msg)])
-        self.update = nn.GRU(hid_dim, hid_dim, batch_first=True)
+        self.update_nets = nn.ModuleList([nn.Sequential(
+            nn.Linear(hid_dim * 2, hid_dim), nn.SiLU(), nn.Linear(hid_dim, hid_dim)
+        ) for _ in range(n_msg)])
         self.head = nn.Linear(hid_dim, 3)
     
     def forward(self, x, vel, domain_id=None):
         B, N, _ = x.shape
         h = self.embed(torch.cat([x, vel], dim=-1))
         
-        for msg_net in self.msg_nets:
+        for msg_net, upd_net in zip(self.msg_nets, self.update_nets):
             msgs = []
             for j in range(N):
                 diff = h - h[:, j:j+1, :]
                 dist = torch.norm(diff, dim=-1, keepdim=True)
                 inp = torch.cat([h, diff, dist], dim=-1)
                 msgs.append(msg_net(inp))
-            msg_agg = torch.stack(msgs, dim=1).mean(dim=1)
-            h, _ = self.update(msg_agg.unsqueeze(1), h.unsqueeze(1))
-            h = h.squeeze(1)
+            msg_agg = torch.stack(msgs, dim=1).mean(dim=1).unsqueeze(1).expand(-1, N, -1)
+            h = upd_net(torch.cat([h, msg_agg], dim=-1))
         
         return self.head(h)
 
