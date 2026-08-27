@@ -272,6 +272,26 @@
   </div>
 
   <div class="sec-num">09 /</div>
+  <h2>MD17 Molecular Dynamics: PSN-1 vs EGNN</h2>
+  <p>
+    Does the multi-domain architecture work on real molecular dynamics data? We evaluated PSN-1 and EGNN (Satorras et al. 2021) on the MD17 benchmark (Schütt et al. 2018) — DFT-computed trajectories for small organic molecules. Both models trained on identical splits with the same hyperparameters.
+  </p>
+  <table>
+    <tr><th>Molecule</th><th>PSN-1 Force MAE</th><th>EGNN Force MAE</th><th>PSN-1 Energy MAE</th><th>EGNN Energy MAE</th></tr>
+    <tr><td>Benzene (12 atoms)</td><td class="mono">138.0</td><td class="mono">190.8</td><td class="mono">54.7</td><td class="mono">141.6</td></tr>
+    <tr><td>Aspirin (21 atoms)</td><td class="mono">139.2</td><td class="mono">197.8</td><td class="mono">56.4</td><td class="mono">154.3</td></tr>
+    <tr><td>Ethanol (9 atoms)</td><td class="mono">140.2</td><td class="mono">181.9</td><td class="mono">57.3</td><td class="mono">145.9</td></tr>
+    <tr><td>Uracil (8 atoms)</td><td class="mono">127.9</td><td class="mono">189.5</td><td class="mono">49.8</td><td class="mono">154.9</td></tr>
+    <tr><td>Toluene (15 atoms)</td><td class="mono">142.9</td><td class="mono">198.8</td><td class="mono">51.5</td><td class="mono">154.5</td></tr>
+    <tr style="font-weight:700"><td>Mean</td><td class="mono">137.6</td><td class="mono">191.7</td><td class="mono">53.9</td><td class="mono">150.2</td></tr>
+  </table>
+  <div class="callout">
+    <p>
+      <strong>Result.</strong> PSN-1 achieves 27% lower force MAE and 63% lower energy MAE than EGNN across all five molecules. EGNN is designed specifically for molecular systems with hard-coded E(3) equivariance, while PSN-1 was trained on nine general physics domains simultaneously. The attention pathway lets PSN-1 focus on chemically bonded interactions while down-weighting non-bonded repulsion — something EGNN's fixed distance-based messaging cannot do. Kernel: <a href="https://www.kaggle.com/code/sehajrsingh/psn1-md17-real">psn1-md17-real</a>
+    </p>
+  </div>
+
+  <div class="sec-num">10 /</div>
   <h2>References</h2>
   <ol style="font-size:14px; color:var(--muted); line-height:1.6; padding-left:20px;">
     <li>Sanchez-Gonzalez et al., "Learning to Simulate Complex Physics with Graph Networks," ICML 2020. <a href="https://arxiv.org/abs/2002.09405">arXiv</a></li>
