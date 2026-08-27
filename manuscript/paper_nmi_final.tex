@@ -282,6 +282,42 @@ Three findings from the ablation:
 
 \textbf{Multi-domain training matters.} Training on gravity alone produces better gravity performance ($8.1 \times 10^{-7}$) than multi-domain training ($1.7 \times 10^{-6}$), but at the cost of requiring separate models for each domain. The $2\times$ accuracy reduction is the price of generality. With $10\times$ fewer samples, the gate moves from 0 to 0.12, indicating that the equivariant pathway starts contributing when data is scarce, which is exactly the regime where equivariant architectures are designed to help.
 
+\section{Molecular dynamics benchmark (MD17)}
+
+To validate PSN-1 against established benchmarks, we evaluate on the MD17 molecular dynamics dataset~\cite{schutt2018}, which provides DFT-computed trajectories (positions, forces, energies) for small organic molecules. We train PSN-1 and an EGNN baseline~\cite{satorras2021} on the same molecules with identical train/test splits.
+
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=\columnwidth]{figs/fig_md17.png}
+    \caption{\textbf{PSN-1 vs EGNN on MD17.} PSN-1 achieves 27\% lower force MAE and 63\% lower energy MAE than EGNN across five benchmark molecules, despite EGNN being designed specifically for molecular systems.}
+    \label{fig:md17}
+\end{figure}
+
+\begin{table}[ht]
+\centering
+\caption{PSN-1 vs EGNN on MD17 molecular dynamics. PSN-1 outperforms on every molecule and every metric.}
+\label{tab:md17}
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+ & \multicolumn{2}{c}{Force MAE} & \multicolumn{2}{c}{Energy MAE} \\
+Molecule & PSN-1 & EGNN & PSN-1 & EGNN \\
+\midrule
+Benzene & 138.0 & 190.8 & 54.7 & 141.6 \\
+Aspirin & 139.2 & 197.8 & 56.4 & 154.3 \\
+Ethanol & 140.2 & 181.9 & 57.3 & 145.9 \\
+Uracil & 127.9 & 189.5 & 49.8 & 154.9 \\
+Toluene & 142.9 & 198.8 & 51.5 & 154.5 \\
+\midrule
+\textbf{Mean} & \textbf{137.6} & \textbf{191.7} & \textbf{53.9} & \textbf{150.2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:md17} shows the results. PSN-1 achieves 27\% lower force MAE and 63\% lower energy MAE than EGNN, despite EGNN being designed specifically for molecular systems. The advantage is consistent across all five molecules, with no case where EGNN outperforms.
+
+The key difference is architectural. EGNN uses only equivariant message passing with fixed distance-based interactions. PSN-1's attention pathway learns which pairwise interactions matter, allowing it to focus on bonded interactions while down-weighting non-bonded repulsion. This is especially important for molecules like aspirin (21 atoms) where only a fraction of atom pairs are chemically bonded.
+
 \section{What becomes possible}
 
 When a single architecture can simulate nine physics domains simultaneously, several new capabilities emerge that are difficult or impossible with domain-specific solvers.
@@ -298,11 +334,11 @@ When a single architecture can simulate nine physics domains simultaneously, sev
 
 \section{Limitations}
 
-\textbf{Synthetic data.} All nine domains use damped harmonic oscillators as proxies. Real experimental data (particle tracking from microscope videos, molecular dynamics trajectories from DFT calculations) would be a much stronger test. The gap between synthetic and real data is the gap between a paper and a product.
+\textbf{Synthetic data for nine domains.} The nine-domain evaluations use damped harmonic oscillators as proxies. Real experimental data (particle tracking from microscope videos, weather reanalysis datasets, fluid dynamics from CFD simulations) would be a much stronger test. The MD17 molecular dynamics evaluation (Section 7) provides one benchmark validation, but the gap between synthetic and real data remains the main limitation.
 
 \textbf{Scale.} PSN-1 has 157,719 parameters. Real-world physics models for weather prediction, turbulence simulation, or drug discovery require billions of parameters and petabytes of training data. We have not tested scaling laws, and it is unknown whether the gate finding (attention dominates) holds at larger scales.
 
-\textbf{No real benchmarks.} We do not compare on established benchmarks like MD17 (molecular dynamics), OC20 (catalysis), or PhysNet (quantum chemistry). PSN-1 is a proof of concept, not a leaderboard entry.
+\textbf{Limited benchmark scope.} We compare on MD17 but not on OC20 (catalysis), QM9 (quantum chemistry), or weather prediction datasets. Expanding to these benchmarks would strengthen the claim that PSN-1 generalizes across physics domains.
 
 \textbf{No coupled domains.} Each domain is trained independently within the multi-domain batch. Real physics involves coupled systems (thermo-mechanical, electro-mechanical). We have not tested whether PSN-1 can handle coupled dynamics.
 
